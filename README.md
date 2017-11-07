@@ -1,4 +1,4 @@
 # Labs
 MC202
 
-Apenas laboratórios antigos e novos de MC202
+Apenas laboratórios (em dupla) antigos e novos de MC202.
