@@ -2,7 +2,7 @@
   Lab07: Painel de Controle de Programas
   Nome: Fabio Stori
   RA: 196631
-  Nome: Adivair Santana Ramos
+  Nome: Adivair Satan Ramos
   RA: 193325
   Turma E - MC202
 */
