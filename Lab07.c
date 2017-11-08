@@ -21,7 +21,7 @@ typedef struct Pasta{
   int tam;
 }Pasta;
 
-int inserir (Pasta *pasta, char programa[30]);
+void inserir (Pasta *pasta, char programa[30]);
 
 void alocar (Pasta *pasta, char programa[30], Filho filho);
 
@@ -82,35 +82,21 @@ void inicializaRaiz(Pasta *raiz, int P){
   raiz->dir = NULL;
   raiz->esq = NULL;
 }
-int inserir (Pasta *pasta, char programa[30]){
-  if(pasta){
-    if(pasta->tam == 0){
-      Pasta *novo = malloc(sizeof(Pasta));  
-      novo->dir = NULL;
-      novo->esq = NULL;
-      novo->pai = NULL;
-      strcpy(novo->programa, programa);
-      pasta = novo;
-      return 1;
-    }
-    else{
-      int teste = strcmp(programa, pasta->programa);
-      if(teste<0){
-        if(!inserir(pasta->esq, programa))
-          alocar(pasta, programa, Esq);
-        else
-          inserir(pasta->esq, programa);
-      }else{
-        if(!inserir(pasta->dir, programa))
-          alocar(pasta, programa, Esq);
-        else
-          inserir(pasta->dir, programa);
-      }
-      return 1;
-    }
-  }else{    
-    return 0;
-  }
+void inserir (Pasta *pasta, char programa[30]){
+  if(pasta){    
+    int teste = strcmp(programa, pasta->programa);    //testa se o programa e maior ou menor
+    if(teste<0){      //se for menor, vai pra esquerda
+      if(pasta->esq == NULL)    //e se o da esquerda for nulo, insere
+        alocar(pasta, programa, Esq);
+      else
+        inserir(pasta->esq, programa);    //se nao, testa o da esquerda
+    }else{      //se nao for menor, é maior, logo executa um procedimento analogo para a direita
+      if(pasta->dir == NULL)
+        alocar(pasta, programa, Dir);
+      else
+        inserir(pasta->dir, programa);
+    }    
+  }  
 }
 
 void alocar (Pasta *pasta, char programa[30], Filho filho){
