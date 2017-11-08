@@ -18,7 +18,6 @@ typedef struct Pasta{
   struct Pasta *esq;
   struct Pasta *pai;
   char programa[30];
-  int tam;
 }Pasta;
 
 void inserir (Pasta *pasta, char programa[30]);
@@ -27,7 +26,7 @@ void alocar (Pasta *pasta, char programa[30], Filho filho);
 
 void imprimeInOrdem(Pasta *pasta);
 
-void inicializaRaiz(Pasta *raiz, int P);
+void inicializaRaiz(Pasta *raiz);
 
 int  main(){
   int op, P, i;
@@ -35,7 +34,8 @@ int  main(){
   scanf("%d", &P);
     
   Pasta *raiz = malloc(sizeof(Pasta));
-  inicializaRaiz(raiz, P);
+  inicializaRaiz(raiz);
+  //raiz = NULL;
     
   char inOrdem[P][30], preOrdem[P][30], programa[30];
   
@@ -49,8 +49,7 @@ int  main(){
     switch(op){     
       case(1):
         scanf("%s", programa);
-        inserir(raiz, programa);    //raiz sera o no inicial que eu ainda nao criei nessa versao
-        raiz->tam++;
+        inserir(raiz, programa);
       break;
 
       case(2):
@@ -75,9 +74,7 @@ int  main(){
   }  
   return 0;
 }
-void inicializaRaiz(Pasta *raiz, int P){
-  raiz->programa[0] = 'r'; 
-  raiz->tam = P;
+void inicializaRaiz(Pasta *raiz){
   raiz->pai = NULL;
   raiz->dir = NULL;
   raiz->esq = NULL;
@@ -96,7 +93,14 @@ void inserir (Pasta *pasta, char programa[30]){
       else
         inserir(pasta->dir, programa);
     }    
-  }  
+  }else{    //caso em que a arvore esta vazia
+    Pasta *novo = malloc(sizeof(Pasta));  
+    novo->dir = NULL;
+    novo->esq = NULL;
+    novo->pai = NULL;
+    strcpy(novo->programa, programa);
+    pasta = novo; 
+  }
 }
 
 void alocar (Pasta *pasta, char programa[30], Filho filho){
