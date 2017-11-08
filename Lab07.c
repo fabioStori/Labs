@@ -49,7 +49,6 @@ int  main(){
     switch(op){     
       case(1):
         scanf("%s", programa);
-        printf("1\n");
         inserir(raiz, programa);    //raiz sera o no inicial que eu ainda nao criei nessa versao
         raiz->tam++;
       break;
@@ -92,13 +91,20 @@ int inserir (Pasta *pasta, char programa[30]){
       novo->pai = NULL;
       strcpy(novo->programa, programa);
       pasta = novo;
+      return 1;
     }
     else{
       int teste = strcmp(programa, pasta->programa);
       if(teste<0){
-        
+        if(!inserir(pasta->esq, programa))
+          alocar(pasta, programa, Esq);
+        else
+          inserir(pasta->esq, programa);
       }else{
-        
+        if(!inserir(pasta->dir, programa))
+          alocar(pasta, programa, Esq);
+        else
+          inserir(pasta->dir, programa);
       }
       return 1;
     }
