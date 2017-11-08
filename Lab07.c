@@ -10,9 +10,16 @@
 #include<stdlib.h>
 #include<stdio.h>
 
-typedef struct No{
+typedef struct Pasta{
+  struct Pasta *dir;
+  struct Pasta *esq;
+  struct Pasta *pai;
+  char programa[30];
+}Pasta;
 
-}No;
+void inserir (Pasta *pasta, char programa[30]);
+
+void alocar (Pasta *pasta, char programa[30]);
 
 int  main(){
   int op, P, i;
@@ -30,6 +37,7 @@ int  main(){
     
     switch(op){     
       case(1):
+        inserir();
       break;
 
       case(2):
@@ -55,3 +63,22 @@ int  main(){
   return 0;
 }
 
+void inserir (Pasta *pasta, char programa[30]){
+  if(pasta){
+    int teste = strcmp(programa, pasta->programa);
+    if(teste<0)
+      inserir(pasta, programa);
+    else
+      inserir(pasta, programa);
+  }else{
+    alocar(pasta, programa);
+  }
+}
+
+void alocar (Pasta *pasta, char programa[30]){
+  Pasta *novo = malloc(sizeof(Pasta));
+  novo->pai = pasta;
+  strcpy(pasta->programa, programa);
+  novo->dir = NULL;
+  novo->esq = NULL;
+}
