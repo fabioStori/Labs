@@ -9,6 +9,7 @@
 
 #include<stdlib.h>
 #include<stdio.h>
+#include<string.h>
 
 typedef struct Pasta{
   struct Pasta *dir;
@@ -31,18 +32,19 @@ int  main(){
   inicializaRaiz(raiz);
   scanf("%d", &P);
   
-  char in-ordem[P][30], pre-ordem[P][30], programa[30];
+  char inOrdem[P][30], preOrdem[P][30], programa[30];
   
   for(i=0;i<P;i++)
-    scanf("%s", in-ordem[i]);
+    scanf("%s", inOrdem[i]);
   for(i=0;i<P;i++)
-    scanf("%s", pre-ordem[i]);
+    scanf("%s", preOrdem[i]);
   
   while(scanf("%d", &op)!= EOF){    //ate o arquivo acabar...
     
     switch(op){     
       case(1):
         scanf("%s", programa);
+        printf("2\n");
         inserir(raiz, programa);    //raiz sera o no inicial que eu ainda nao criei nessa versao
       break;
 
@@ -70,33 +72,43 @@ int  main(){
   return 0;
 }
 void inicializaRaiz(Pasta *raiz){
+  raiz->programa[0] = 'r'; raiz->programa[1] = '\n'; 
   raiz->pai = NULL;
   raiz->dir = NULL;
   raiz->esq = NULL;
 }
 void inserir (Pasta *pasta, char programa[30]){
   if(pasta){
+    printf("3\n");
     int teste = strcmp(programa, pasta->programa);
-    if(teste<0)
-      inserir(pasta, programa);
-    else
-      inserir(pasta, programa);
+    printf("3\n");
+    if(teste<0){
+      printf("3\n");      
+      inserir(pasta->esq, programa);
+      printf("3\n");
+    }else{
+      printf("4\n");
+      inserir(pasta->dir, programa);
+      printf("4\n");
+    }
   }else{
+    printf("5\n");
     alocar(pasta, programa);
+    printf("5\n");
   }
 }
 
 void alocar (Pasta *pasta, char programa[30]){
   Pasta *novo = malloc(sizeof(Pasta));
   novo->pai = pasta;
-  strcpy(pasta->programa, programa);
+  strcpy(novo->programa, programa);
   novo->dir = NULL;
   novo->esq = NULL;
 }
 void imprimeInOrdem(Pasta *pasta){
   if(pasta){
     imprimeInOrdem(pasta->esq);
-    printf("Programa: %s", pasta->programa);
+    printf("Programa: %s\n", pasta->programa);
     imprimeInOrdem(pasta->dir);
   }
 }
