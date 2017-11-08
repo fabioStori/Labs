@@ -18,22 +18,25 @@ typedef struct Pasta{
   struct Pasta *esq;
   struct Pasta *pai;
   char programa[30];
+  int tam;
 }Pasta;
 
-void inserir (Pasta *pasta, char programa[30], Filho filho);
+int inserir (Pasta *pasta, char programa[30]);
 
 void alocar (Pasta *pasta, char programa[30], Filho filho);
 
 void imprimeInOrdem(Pasta *pasta);
 
-void inicializaRaiz(Pasta *raiz);
+void inicializaRaiz(Pasta *raiz, int P);
 
 int  main(){
   int op, P, i;
-  Pasta *raiz = malloc(sizeof(Pasta));
-  inicializaRaiz(raiz);
+ 
   scanf("%d", &P);
-  
+    
+  Pasta *raiz = malloc(sizeof(Pasta));
+  inicializaRaiz(raiz, P);
+    
   char inOrdem[P][30], preOrdem[P][30], programa[30];
   
   for(i=0;i<P;i++)
@@ -46,8 +49,9 @@ int  main(){
     switch(op){     
       case(1):
         scanf("%s", programa);
-        printf("2\n");
-        inserir(raiz, programa, Raiz);    //raiz sera o no inicial que eu ainda nao criei nessa versao
+        printf("1\n");
+        inserir(raiz, programa);    //raiz sera o no inicial que eu ainda nao criei nessa versao
+        raiz->tam++;
       break;
 
       case(2):
@@ -69,26 +73,34 @@ int  main(){
         imprimeInOrdem(raiz);
       break;
     }
-  }
-  printf("\n");
+  }  
   return 0;
 }
-void inicializaRaiz(Pasta *raiz){
-  raiz->programa[0] = 'r'; raiz->programa[1] = '\n'; 
+void inicializaRaiz(Pasta *raiz, int P){
+  raiz->programa[0] = 'r'; 
+  raiz->tam = P;
   raiz->pai = NULL;
   raiz->dir = NULL;
   raiz->esq = NULL;
 }
-void inserir (Pasta *pasta, char programa[30], Filho filho){
+int inserir (Pasta *pasta, char programa[30]){
   if(pasta){
-    int teste = strcmp(programa, pasta->programa);
-    if(teste<0){
-      inserir(pasta->esq, programa, Esq);
-    }else{
-      inserir(pasta->dir, programa, Dir);
+    if(pasta->tam == 0){
+      alocar(NULL, programa, Raiz);
     }
-  }else{
-    alocar(pasta, programa, filho);
+    else{
+      int teste = strcmp(programa, pasta->programa);
+      if(teste<0){
+        if (!inserir(pasta->esq, programa))
+          alocar(pasta, programa, Esq);
+      }else{
+        if (!inserir(pasta->dir, programa))
+          alocar(pasta, programa, Dir);
+      }
+      return 1;
+    }
+  }else{    
+    return 0;
   }
 }
 
@@ -98,12 +110,11 @@ void alocar (Pasta *pasta, char programa[30], Filho filho){
   novo->esq = NULL;
   novo->pai = pasta;
   strcpy(novo->programa, programa);
-  printf("3\n");
+  printf("2\n");
   if(filho == Esq)
     pasta->esq = novo;
-  else
-    pasta->dir = novo;
-  printf("4\n");
+  else if(filho == Dir)
+    pasta->dir = novo;  
 }
 void imprimeInOrdem(Pasta *pasta){
   if(pasta){
