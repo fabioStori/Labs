@@ -11,6 +11,8 @@
 #include<stdio.h>
 #include<string.h>
 
+typedef enum {Esq, Dir, Raiz} Filho;
+
 typedef struct Pasta{
   struct Pasta *dir;
   struct Pasta *esq;
@@ -18,9 +20,9 @@ typedef struct Pasta{
   char programa[30];
 }Pasta;
 
-void inserir (Pasta *pasta, char programa[30]);
+void inserir (Pasta *pasta, char programa[30], Filho filho);
 
-void alocar (Pasta *pasta, char programa[30]);
+void alocar (Pasta *pasta, char programa[30], Filho filho);
 
 void imprimeInOrdem(Pasta *pasta);
 
@@ -45,7 +47,7 @@ int  main(){
       case(1):
         scanf("%s", programa);
         printf("2\n");
-        inserir(raiz, programa);    //raiz sera o no inicial que eu ainda nao criei nessa versao
+        inserir(raiz, programa, Raiz);    //raiz sera o no inicial que eu ainda nao criei nessa versao
       break;
 
       case(2):
@@ -77,33 +79,31 @@ void inicializaRaiz(Pasta *raiz){
   raiz->dir = NULL;
   raiz->esq = NULL;
 }
-void inserir (Pasta *pasta, char programa[30]){
+void inserir (Pasta *pasta, char programa[30], Filho filho){
   if(pasta){
-    printf("3\n");
     int teste = strcmp(programa, pasta->programa);
-    printf("3\n");
     if(teste<0){
-      printf("3\n");      
-      inserir(pasta->esq, programa);
-      printf("3\n");
+      inserir(pasta->esq, programa, Esq);
     }else{
-      printf("4\n");
-      inserir(pasta->dir, programa);
-      printf("4\n");
+      inserir(pasta->dir, programa, Dir);
     }
   }else{
-    printf("5\n");
-    alocar(pasta, programa);
-    printf("5\n");
+    alocar(pasta, programa, filho);
   }
 }
 
-void alocar (Pasta *pasta, char programa[30]){
-  Pasta *novo = malloc(sizeof(Pasta));
-  novo->pai = pasta;
-  strcpy(novo->programa, programa);
+void alocar (Pasta *pasta, char programa[30], Filho filho){
+  Pasta *novo = malloc(sizeof(Pasta));  
   novo->dir = NULL;
   novo->esq = NULL;
+  novo->pai = pasta;
+  strcpy(novo->programa, programa);
+  printf("3\n");
+  if(filho == Esq)
+    pasta->esq = novo;
+  else
+    pasta->dir = novo;
+  printf("4\n");
 }
 void imprimeInOrdem(Pasta *pasta){
   if(pasta){
