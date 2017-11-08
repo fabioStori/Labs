@@ -86,16 +86,19 @@ void inicializaRaiz(Pasta *raiz, int P){
 int inserir (Pasta *pasta, char programa[30]){
   if(pasta){
     if(pasta->tam == 0){
-      alocar(NULL, programa, Raiz);
+      Pasta *novo = malloc(sizeof(Pasta));  
+      novo->dir = NULL;
+      novo->esq = NULL;
+      novo->pai = NULL;
+      strcpy(novo->programa, programa);
+      pasta = novo;
     }
     else{
       int teste = strcmp(programa, pasta->programa);
       if(teste<0){
-        if (!inserir(pasta->esq, programa))
-          alocar(pasta, programa, Esq);
+        
       }else{
-        if (!inserir(pasta->dir, programa))
-          alocar(pasta, programa, Dir);
+        
       }
       return 1;
     }
@@ -110,12 +113,12 @@ void alocar (Pasta *pasta, char programa[30], Filho filho){
   novo->esq = NULL;
   novo->pai = pasta;
   strcpy(novo->programa, programa);
-  printf("2\n");
   if(filho == Esq)
     pasta->esq = novo;
   else if(filho == Dir)
     pasta->dir = novo;  
 }
+
 void imprimeInOrdem(Pasta *pasta){
   if(pasta){
     imprimeInOrdem(pasta->esq);
