@@ -1,4 +1,4 @@
-/*(Testando commit)
+/*
   Lab07: Painel de Controle de Programas
   Nome: Fabio Stori
   RA: 196631
