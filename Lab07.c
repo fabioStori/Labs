@@ -1,4 +1,4 @@
-/*Teste site
+/*batata frita
   Lab07: Painel de Controle de Programas
   Nome: Fabio Stori
   RA: 196631
