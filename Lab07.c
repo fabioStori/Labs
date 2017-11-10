@@ -79,29 +79,27 @@ int  main(){
     }
     return 0;
 }
-void inicializaRaiz(Pasta *raiz){
+void inicializaRaiz(Pasta *raiz) {
     raiz->pai = NULL;
     raiz->dir = NULL;
     raiz->esq = NULL;
 }
 Pasta* inserir (Pasta *pasta, char programa[30]){
-    printf("asdf\n");
     if(pasta){
         int teste = strcmp(programa, pasta->programa);    //testa se o programa e maior ou menor
         if(teste<0){      //se for menor, vai pra esquerda
             if(pasta->esq == NULL)    //e se o da esquerda for nulo, insere
                 alocar(pasta, programa, Esq);
-            else
-                inserir(pasta->esq, programa);    //se nao, testa o da esquerda
-        }else{      //se nao for menor, é maior, logo executa um procedimento analogo para a direita
-            if(pasta->dir == NULL)
-                alocar(pasta, programa, Dir);
-            else
-                inserir(pasta->dir, programa);
+                else
+                    inserir(pasta->esq, programa);    //se nao, testa o da esquerda
+            }else{      //se nao for menor, é maior, logo executa um procedimento analogo para a direita
+                if(pasta->dir == NULL)
+                    alocar(pasta, programa, Dir);
+                else
+                    inserir(pasta->dir, programa);
         }
         return pasta;
     }else{    //caso em que a arvore esta vazia
-        printf("aos\n");
         Pasta *novo = malloc(sizeof(Pasta));
         novo->dir = NULL;
         novo->esq = NULL;
@@ -109,26 +107,25 @@ Pasta* inserir (Pasta *pasta, char programa[30]){
         strcpy(novo->nome, "raiz");
         strcpy(novo->programa, programa);
         novo;
-        return novo;
+            return novo;
     }
 }
 
-void alocar (Pasta *pasta, char programa[30], Filho filho){
-    Pasta *novo = malloc(sizeof(Pasta));
-    novo->dir = NULL;
-    novo->esq = NULL;
-    novo->pai = pasta;
-    strcpy(novo->nome, programa);
-    strcpy(novo->programa, programa);
-    if(filho == Esq){
-        strcat(novo->nome, "_esq");
-        pasta->esq = novo;
-    }else if(filho == Dir){
-        strcat(novo->nome, "_dir");
-        pasta->dir = novo;
+    void alocar (Pasta *pasta, char programa[30], Filho filho){
+        Pasta *novo = malloc(sizeof(Pasta));
+        novo->dir = NULL;
+        novo->esq = NULL;
+        novo->pai = pasta;
+        strcpy(novo->nome, pasta->programa);
+        strcpy(novo->programa, programa);
+        if(filho == Esq){
+            strcat(novo->nome, "_esq");
+            pasta->esq = novo;
+        }else if(filho == Dir){
+            strcat(novo->nome, "_dir");
+            pasta->dir = novo;
+        }
     }
-}
-
 void imprimeInOrdem(Pasta *pasta){
     if(pasta){
         imprimeInOrdem(pasta->esq);
