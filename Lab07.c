@@ -29,8 +29,12 @@ void imprimeInOrdem(Pasta *pasta);
 
 void inicializaRaiz(Pasta *raiz);
 
-void remover (Pasta *pasta, char programa[30], Filho filho);
+//void remover (Pasta *pasta, char programa[30], Filho filho);
 
+Pasta* remover(Pasta *pasta, char programa[30]);
+
+void substituirAntecessor(Pasta *pasta);
+/*
 void removerFolha(Pasta *pasta, Filho filho);
 
 void remover1Filho(Pasta *pasta, Filho filho);
@@ -40,6 +44,7 @@ void remover2Filhos(Pasta *pasta, Filho filho);
 void mudaNome(Pasta *pasta, Filho filho);
 
 Pasta* antecessor(Pasta *pasta);
+*/
 
 int  main(){
   int op, P, i;
@@ -67,7 +72,7 @@ int  main(){
       break;        
       case(2):
         scanf("%s", programa);
-        remover(raiz, programa, Raiz);
+        remover(raiz, programa);
       break;
 
       case(3): 
@@ -89,12 +94,47 @@ int  main(){
   }  
   return 0;
 }
+
+Pasta* remover(Pasta *pasta, char programa[30]){
+  if(pasta == NULL)
+    return NULL;  
+  int teste = strcmp(programa, pasta->programa);
+  if(teste<0){
+    pasta->esq = remover(pasta->esq, programa);
+    return pasta;
+  }else if(teste>0){
+    pasta->dir = remover(pasta->dir, programa);
+    return pasta;      
+  }else if (pasta->esq == NULL)
+    return pasta->dir;
+  else if (pasta->dir == NULL)
+    return pasta->esq;
+  else{
+    substituirAntecessor(pasta);
+    return pasta;
+  }  
+}
+
+void substituirAntecessor (Pasta *pasta){
+  Pasta *pai = pasta, *t = pasta->esq;
+  while(t->dir!=NULL){
+    pai = t;
+    t = t->dir;
+  }
+  if(pai->esq == t)
+    pai->esq = t->dir;
+  else
+    pai->dir = t->esq;
+  strcpy(pasta->programa, t->programa);
+  printf("Programa: %s, Pasta: %s | removidos\n", pasta->programa, pasta->nome);
+}
+
 /*void inicializaRaiz(Pasta *raiz){
   raiz->pai = NULL;
   raiz->dir = NULL;
   raiz->esq = NULL;
 }*/
-
+/*
 void remover (Pasta *pasta, char programa[30], Filho filho){
   if(pasta){    //se nao for nulo
     int teste = strcmp(programa, pasta->programa);    //testa se o programa e maior ou menor
@@ -118,6 +158,7 @@ void remover (Pasta *pasta, char programa[30], Filho filho){
 void removerFolha(Pasta *pasta, Filho filho){
   if(filho == Esq){     //caso a pasta com o programa seja um filho da esquerda
     pasta->pai->esq = NULL;   //a esquerda do pai sera liberada
+    printf("antes do free pasta: %s pasta pai: %s\n", pasta->programa, pasta->pai->programa);
     free(pasta);
   }else{
     pasta->pai->dir = NULL;   //se nao, sera a direita do pai que sera liberada
@@ -127,23 +168,30 @@ void removerFolha(Pasta *pasta, Filho filho){
 
 void remover1Filho(Pasta *pasta, Filho filho){
   if(filho == Esq){   //caso a pasta com o programa seja um filho da esquerda
+    printf("achou filho da esquerda\n");
+    mudaNome(pasta, Esq);  
     if(pasta->esq){   //e o filho da esquerda dessa pasta (que será removida) nao seja nulo
-      mudaNome(pasta, Esq);                                                                  //apenas corrigindo o nome da pasta, que agora tera um novo pai
+                                                                      //apenas corrigindo o nome da pasta, que agora tera um novo pai
       pasta->pai->esq = pasta->esq;     //a esquerda do pai apontará pro filho da esquerda
+      pasta->esq->pai = pasta->pai;
       free(pasta);
     }else{    //se nao, apontara pro filho da direita (pois o esquerdo sera o nulo, e o direito o nao nulo)
-      mudaNome(pasta, Dir);    //e o resto e analogo ao caso anterior
-      pasta->pai->esq = pasta->dir;   
+         //e o resto e analogo ao caso anterior
+      pasta->pai->esq = pasta->dir;  
+      printf("aqui chega\n");
+      pasta->dir->pai = pasta->pai;
       free(pasta);
     }
   }else{    //se nao, sera um filho da direita
-    if(pasta->esq){     //e o resto e analogo ao da esquerda
-      mudaNome(pasta, Esq);
+    mudaNome(pasta, Dir);
+    printf("achou filho da direita\n");
+    if(pasta->esq){     //e o resto e analogo ao da esquerda      
       pasta->pai->dir = pasta->esq;
+      pasta->esq->pai = pasta->pai;
       free(pasta);
     }else{
-      mudaNome(pasta, Dir);
       pasta->pai->dir = pasta->dir;
+      pasta->dir->pai = pasta->pai;
       free(pasta);
     }
   }
@@ -151,10 +199,10 @@ void remover1Filho(Pasta *pasta, Filho filho){
 
 void mudaNome(Pasta *pasta, Filho filho){
   if(filho == Esq){
-    strcpy(pasta->esq->nome, pasta->programa);    
+    strcpy(pasta->esq->nome, pasta->pai->programa);    
     strcat(pasta->esq->nome, "_esq");
   }else{
-    strcpy(pasta->dir->nome, pasta->programa);    
+    strcpy(pasta->dir->nome, pasta->pai->programa);    
     strcat(pasta->dir->nome, "_dir");
   }
 }
@@ -164,18 +212,18 @@ void remover2Filhos(Pasta *pasta, Filho filho){
     pasta->pai->esq = antecessor(pasta);
     free(pasta);
   }else{
-    pasta->pai->dir = antecessor(pasta);;
+    pasta->pai->dir = antecessor(pasta);
     free(pasta);
   }
 }
 
 Pasta* antecessor(Pasta *pasta){
   Pasta *tmp = pasta->esq;
-  while(tmp->esq!=NULL){
-    tmp = tmp->esq;
+  while(tmp->dir!=NULL){
+    tmp = tmp->dir;
   }
   return tmp;
-}
+}*/
 
 Pasta* inserir (Pasta *pasta, char programa[30]){
   if(pasta){
