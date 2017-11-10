@@ -33,6 +33,7 @@ Pasta* remover(Pasta *pasta, char programa[30]);
 
 void substituirAntecessor(Pasta *pasta);
 
+peroba
 
 int  main(){
   int op, P, i;
