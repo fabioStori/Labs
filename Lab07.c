@@ -22,7 +22,7 @@ typedef struct Pasta{
 
 Pasta* inserir (Pasta *pasta, char programa[30]);
 
-void alocar (Pasta *pasta, char programa[30], Filho filho);
+void alocarPasta (Pasta *pasta, char programa[30], Filho filho);
 
 void imprimeInOrdem(Pasta *pasta);
 
@@ -34,6 +34,9 @@ Pasta *constrArv(char **inOrdem, char **preOrdem, int l, int r, int *indPre, Pas
 
 int nivelPrograma(Pasta *raiz, char *busca, int nivel);
 
+Pasta* remover(Pasta *pasta, char programa[30]);
+
+void substituirAntecessor(Pasta *pasta);
 
 int  main(){
     int op, P, i;
@@ -61,6 +64,8 @@ int  main(){
                 break;
 
             case(2):
+                scanf("%s", programa);
+                raiz = remover(raiz, programa);
                 break;
 
             case(3):
@@ -81,25 +86,61 @@ int  main(){
                 imprimeInOrdem(raiz);
                 break;
         }
-    }
-    return 0;
-}
+
 void inicializaRaiz(Pasta *raiz) {
     raiz->pai = NULL;
     raiz->dir = NULL;
     raiz->esq = NULL;
 }
+Pasta* remover(Pasta *pasta, char programa[30]){
+  if(pasta == NULL)
+    return NULL;
+  if((strcmp(pasta->nome, "raiz")) == 0 && pasta->esq == NULL && pasta->dir == NULL){   //caso em que existe apenas a raiz sem filhos
+    free(pasta);
+    return NULL;
+  }
+  int teste = strcmp(programa, pasta->programa);
+  if(teste<0){
+    pasta->esq = remover(pasta->esq, programa);
+    return pasta;
+  }else if(teste>0){
+    pasta->dir = remover(pasta->dir, programa);
+    return pasta;      
+  }else if (pasta->esq == NULL){
+    return pasta->dir;
+  }else if (pasta->dir == NULL){
+    return pasta->esq;
+  }else{
+    substituirAntecessor(pasta);
+    return pasta;
+  }  
+}
+
+void substituirAntecessor (Pasta *pasta){
+  Pasta *pai = pasta, *t = pasta->esq;
+  while(t->dir!=NULL){
+    pai = t;
+    t = t->dir;
+  }
+  if(pai->esq == t)
+    pai->esq = t->dir;
+  else
+    pai->dir = t->esq;
+  strcpy(pasta->programa, t->programa);
+  printf("Programa: %s, Pasta: %s | removidos\n", pasta->programa, pasta->nome);
+}
+
 Pasta* inserir (Pasta *pasta, char programa[30]){
     if(pasta){
         int teste = strcmp(programa, pasta->programa);    //testa se o programa e maior ou menor
         if(teste<0){      //se for menor, vai pra esquerda
             if(pasta->esq == NULL)    //e se o da esquerda for nulo, insere
-                alocar(pasta, programa, Esq);
+                alocarPasta(pasta, programa, Esq);
                 else
                     inserir(pasta->esq, programa);    //se nao, testa o da esquerda
             }else{      //se nao for menor, é maior, logo executa um procedimento analogo para a direita
                 if(pasta->dir == NULL)
-                    alocar(pasta, programa, Dir);
+                    alocarPasta(pasta, programa, Dir);
                 else
                     inserir(pasta->dir, programa);
         }
@@ -116,7 +157,7 @@ Pasta* inserir (Pasta *pasta, char programa[30]){
     }
 }
 
-    void alocar (Pasta *pasta, char programa[30], Filho filho){
+void alocarPasta (Pasta *pasta, char programa[30], Filho filho){
         Pasta *novo = malloc(sizeof(Pasta));
         novo->dir = NULL;
         novo->esq = NULL;
@@ -131,6 +172,7 @@ Pasta* inserir (Pasta *pasta, char programa[30]){
             pasta->dir = novo;
         }
     }
+  
 void imprimeInOrdem(Pasta *pasta){
     if(pasta){
         imprimeInOrdem(pasta->esq);
@@ -155,8 +197,6 @@ void imprimeMat(char **mat, int lin, int col){
             printf("%c ", mat[i][j]);
         printf("\n");
     }
-
-}
 
 Pasta *constrArv(char **inOrdem, char **preOrdem, int l, int r, int *indPre, Pasta *pai, Filho filho){
     if(l < r) {
