@@ -2,7 +2,7 @@
   Lab07: Painel de Controle de Programas
   Nome: Fabio Stori
   RA: 196631
-  Nome: Adivair Satana Ramos
+  Nome: Adivair Santana Ramos
   RA: 193325
   Turma E - MC202
 */
@@ -109,54 +109,65 @@ int  main() {
     }
 }
 
-
 void inicializaRaiz(Pasta *raiz) {
     raiz->pai = NULL;
     raiz->dir = NULL;
     raiz->esq = NULL;
 }
-
-Pasta *remover(Pasta *pasta, char programa[30]) {
-    if (pasta == NULL)
-        return NULL;
-    if ((strcmp(pasta->nome, "raiz")) == 0 && pasta->esq == NULL &&
-        pasta->dir == NULL) {   //caso em que existe apenas a raiz sem filhos
-        free(pasta);
-        return NULL;
+Pasta* remover(Pasta *pasta, char programa[30]){
+  if(pasta == NULL)
+    return NULL;
+  if((strcmp(pasta->nome, "raiz")) == 0 && pasta->esq == NULL && pasta->dir == NULL){   //caso em que existe apenas a raiz sem filhos
+    free(pasta);
+    return NULL;
+  }
+  int teste = strcmp(programa, pasta->programa);
+  if(teste<0){
+    pasta->esq = remover(pasta->esq, programa);
+    if(pasta->esq != NULL){
+      strcpy(pasta->esq->nome, pasta->programa);
+      strcat(pasta->esq->nome, "_esq");
     }
-    int teste = strcmp(programa, pasta->programa);
-    if (teste < 0) {
-        pasta->esq = remover(pasta->esq, programa);
-        return pasta;
-    } else if (teste > 0) {
-        pasta->dir = remover(pasta->dir, programa);
-        return pasta;
-    } else if (pasta->esq == NULL) {
-        return pasta->dir;
-    } else if (pasta->dir == NULL) {
-        return pasta->esq;
-    } else {
-        substituirAntecessor(pasta);
-        return pasta;
+    return pasta;
+  }else if(teste>0){
+    pasta->dir = remover(pasta->dir, programa);
+    if(pasta->dir != NULL){
+      strcpy(pasta->dir->nome, pasta->programa);
+      strcat(pasta->dir->nome, "_dir");
     }
+    return pasta;
+  }else if (pasta->esq == NULL){
+    Pasta *tmp = pasta->dir;
+    free(pasta);
+    return tmp;
+  }else if (pasta->dir == NULL){
+    Pasta *tmp = pasta->esq;
+    free(pasta);
+    return tmp;
+  }else{
+    substituirAntecessor(pasta);
+    return pasta;
+  }
 }
 
-void substituirAntecessor(Pasta *pasta) {
-    Pasta *pai = pasta, *t = pasta->esq;
-    while (t->dir != NULL) {
-        pai = t;
-        t = t->dir;
-    }
-    if (pai->esq == t)
-        pai->esq = t->dir;
-    else
-        pai->dir = t->esq;
-    strcpy(pasta->programa, t->programa);
-    printf("Programa: %s, Pasta: %s | removidos\n", pasta->programa, pasta->nome);
+void substituirAntecessor (Pasta *pasta){
+  Pasta *pai = pasta, *t = pasta->esq;
+  while(t->dir!=NULL){
+    pai = t;
+    t = t->dir;
+  }
+  if(pai->esq == t)
+    pai->esq = t->dir;
+  else
+    pai->dir = t->esq;
+  strcpy(pasta->programa, t->programa);
+  free(t);
+  printf("Programa: %s, Pasta: %s | removidos\n", pasta->programa, pasta->nome);
 }
 
-Pasta *inserir(Pasta *pasta, char programa[30]) {
-    if (pasta) {
+Pasta* inserir (Pasta *pasta, char programa[30]){
+    if(pasta){
+
         int teste = strcmp(programa, pasta->programa);    //testa se o programa e maior ou menor
         if (teste < 0) {      //se for menor, vai pra esquerda
             if (pasta->esq == NULL)    //e se o da esquerda for nulo, insere
@@ -212,7 +223,6 @@ void imprimePreOrdem(Pasta *pasta) {
         imprimeInOrdem(pasta->dir);
     }
 }
-
 char **alocaMatriz(int lin, int col) {
     char **m = (char **) malloc(lin * sizeof(char *));
     for (int i = 0; i < lin; i++) {
@@ -286,8 +296,6 @@ Pasta* balanceamento(Pasta *raiz) {
     imprimePreOrdem(raiz);
     return raiz;
 }
-
-
 void extraiSemente(Pasta *raiz, char **aux, int *indice){
     if(raiz){
         //strcpy(aux[(*indice)++], raiz->programa);
@@ -297,7 +305,6 @@ void extraiSemente(Pasta *raiz, char **aux, int *indice){
         //strcpy(aux[(*indice)++], raiz->programa);
     }
 }
-
 Pasta *criaArv(char **semente, int l, int r, Filho filho, Pasta *pai){
     if (r > l) {
         int meio = floor((r - l) / 2);
