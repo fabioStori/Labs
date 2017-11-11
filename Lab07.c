@@ -6,9 +6,9 @@
   RA: 193325
   Turma E - MC202
 */
-#include<stdlib.h>
-#include<stdio.h>
-#include<string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <math.h>
 
 int NUM_PROG;
@@ -63,15 +63,16 @@ void imprime(Pasta *raiz);
 
 void imprimeCaminho(Pasta *raiz, char *dire);
 
+Pasta* buscar(Pasta *raiz, char programa[30]);
+
+
 int  main() {
     int op, P, i, tempo, nivel, NUM_PROG_BACKUP;
     scanf("%d", &P);
     Pasta *raiz;
     NUM_PROG = P;
-    //= malloc(sizeof(Pasta));
-    //inicializaRaiz(raiz);
-    //raiz = NULL;
     char **inOrdem, **preOrdem, programa[30], **inSeg, **preSeg;
+
     inOrdem = alocaMatriz(P, 30);
     preOrdem = alocaMatriz(P, 30);
     for (i = 0; i < P; i++)
@@ -92,8 +93,13 @@ int  main() {
 
             case (2):
                 scanf("%s", programa);
-                raiz = remover(raiz, programa);
-                NUM_PROG--;
+                if ((buscar(raiz, programa)) == NULL)
+                    printf("[UNINSTALL] Nao foi encontrado no sistema nenhum programa com nome %s\n", programa);                    
+                else{
+                    raiz = remover(raiz, programa);
+                    NUM_PROG--;
+                    printf("[UNINSTALL] Programa %s.exe desinstalado com sucesso\n", programa);
+                }
                 break;
 
             case (3):
@@ -109,10 +115,7 @@ int  main() {
                 inSeg = alocaMatriz(NUM_PROG, 30);
                 preSeg = alocaMatriz(NUM_PROG, 30);
                 NUM_PROG_BACKUP = NUM_PROG;
-                //printf("%d", NUM_PROG);
                 criaCopia(raiz, inSeg, preSeg);
-                //imprimeMat(preSeg, NUM_PROG, 30);
-                //imprimeMat(inSeg, NUM_PROG, 30);
                 break;
 
             case (6):
@@ -136,54 +139,64 @@ int  main() {
 }
 
 Pasta* remover(Pasta *pasta, char programa[30]){
-    if(pasta == NULL)
-        return NULL;
-    if((strcmp(pasta->nome, "raiz")) == 0 && pasta->esq == NULL && pasta->dir == NULL){   //caso em que existe apenas a raiz sem filhos
-        free(pasta);
-        return NULL;
+  if(pasta == NULL)
+    return NULL;
+  if((strcmp(pasta->nome, "raiz")) == 0 && pasta->esq == NULL && pasta->dir == NULL){   //caso em que existe apenas a raiz sem filhos
+    free(pasta);
+    return NULL;
+  }
+  int teste = strcmp(programa, pasta->programa);
+  if(teste<0){
+    pasta->esq = remover(pasta->esq, programa);
+    if(pasta->esq != NULL){
+       //if(pasta-)
+      strcpy(pasta->esq->nome, pasta->programa);
+      strcat(pasta->esq->nome, "_esq");
     }
-    int teste = strcmp(programa, pasta->programa);
-    if(teste<0){
-        pasta->esq = remover(pasta->esq, programa);
-        if(pasta->esq != NULL){
-            strcpy(pasta->esq->nome, pasta->programa);
-            strcat(pasta->esq->nome, "_esq");
-        }
-        return pasta;
-    }else if(teste>0){
-        pasta->dir = remover(pasta->dir, programa);
-        if(pasta->dir != NULL){
-            strcpy(pasta->dir->nome, pasta->programa);
-            strcat(pasta->dir->nome, "_dir");
-        }
-        return pasta;
-    }else if (pasta->esq == NULL){
-        Pasta *tmp = pasta->dir;
-        free(pasta);
-        return tmp;
-    }else if (pasta->dir == NULL){
-        Pasta *tmp = pasta->esq;
-        free(pasta);
-        return tmp;
-    }else{
-        substituirAntecessor(pasta);
-        return pasta;
+    return pasta;
+  }else if(teste>0){
+    pasta->dir = remover(pasta->dir, programa);
+    if(pasta->dir != NULL){
+      strcpy(pasta->dir->nome, pasta->programa);
+      strcat(pasta->dir->nome, "_dir");
     }
+    return pasta;
+  }else if (pasta->esq == NULL){
+    Pasta *tmp = pasta->dir;
+    if(strcmp(pasta->nome, "raiz")==0){
+        strcpy(tmp->nome, pasta->nome);
+    }
+    free(pasta);
+    return tmp;
+  }else if (pasta->dir == NULL){
+    Pasta *tmp = pasta->esq;
+    if(strcmp(pasta->nome, "raiz")==0){
+        strcpy(tmp->nome, pasta->nome);
+    }
+    free(pasta);
+    return tmp;
+  }else{
+    substituirAntecessor(pasta);
+    return pasta;
+  }
 }
 
 void substituirAntecessor (Pasta *pasta){
-    Pasta *pai = pasta, *t = pasta->esq;
-    while(t->dir!=NULL){
-        pai = t;
-        t = t->dir;
-    }
-    if(pai->esq == t)
-        pai->esq = t->dir;
-    else
-        pai->dir = t->esq;
-    strcpy(pasta->programa, t->programa);
-    free(t);
-    printf("Programa: %s, Pasta: %s | removidos\n", pasta->programa, pasta->nome);
+  Pasta *pai = pasta, *t = pasta->esq;
+  while(t->dir!=NULL){
+    pai = t;
+    t = t->dir;
+  }
+  if(pai->esq == t)
+    pai->esq = t->dir;
+  else
+    pai->dir = t->esq;
+  strcpy(pasta->programa, t->programa);
+  strcpy(pasta->dir->nome, t->programa);
+  strcat(pasta->dir->nome, "_dir");
+  strcpy(pasta->esq->nome, t->programa);
+  strcat(pasta->esq->nome, "_esq");
+  free(t);
 }
 
 Pasta* inserir (Pasta *pasta, char programa[30]){
@@ -374,7 +387,6 @@ void desaloca(Pasta *raiz) {
         free(raiz);
     }
 }
-
 void extraiSementePre(Pasta *raiz, char **aux, int *ind){
     if(raiz){
         strcpy(aux[(*ind)++], raiz->programa);
@@ -407,4 +419,13 @@ void imprimeCaminho(Pasta *raiz, char *dire){
         printf("%s/%s.exe\n", atual, raiz->programa);
         imprimeCaminho(raiz->dir, atual);
     }
+
+Pasta* buscar(Pasta *raiz, char programa[30]){ 
+    if(raiz == NULL || (strcmp(raiz->programa, programa)) == 0)
+        return raiz;
+    if((strcmp(programa, raiz->programa)) < 0)
+        return buscar(raiz->esq, programa);    
+    else
+        return buscar(raiz->dir, programa);    
+
 }
