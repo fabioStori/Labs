@@ -6,9 +6,9 @@
   RA: 193325
   Turma E - MC202
 */
-#include<stdlib.h>
-#include<stdio.h>
-#include<string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <math.h>
 
 int NUM_PROG;
@@ -53,6 +53,8 @@ Pasta *criaArv(char **semente, int l, int r, Filho filho, Pasta *pai);
 
 void desaloca(Pasta *raiz);
 
+Pasta* buscar(Pasta *raiz, char programa[30]);
+
 int  main() {
     int op, P, i, tempo, nivel;
     scanf("%d", &P);
@@ -61,7 +63,7 @@ int  main() {
     //= malloc(sizeof(Pasta));
     //inicializaRaiz(raiz);
     //raiz = NULL;
-    char **inOrdem, **preOrdem, programa[30];
+    char **inOrdem, **preOrdem, **nomesPastas, programa[30];
     inOrdem = alocaMatriz(P, 30);
     preOrdem = alocaMatriz(P, 30);
     for (i = 0; i < P; i++)
@@ -82,8 +84,13 @@ int  main() {
 
             case (2):
                 scanf("%s", programa);
-                raiz = remover(raiz, programa);
-                NUM_PROG--;
+                if ((buscar(raiz, programa)) == NULL)
+                    printf("[UNINSTALL] Nao foi encontrado no sistema nenhum programa com nome %s\n", programa);                    
+                else{
+                    raiz = remover(raiz, programa);
+                    NUM_PROG--;
+                    printf("[UNINSTALL] Programa %s.exe desinstalado com sucesso\n", programa);
+                }
                 break;
 
             case (3):
@@ -102,6 +109,10 @@ int  main() {
                 break;
 
             case (7):
+                
+                break;
+
+            case (8):
                 imprimeInOrdem(raiz);
                 printf("Total de Prog: %d \n", NUM_PROG);
                 break;
@@ -125,6 +136,7 @@ Pasta* remover(Pasta *pasta, char programa[30]){
   if(teste<0){
     pasta->esq = remover(pasta->esq, programa);
     if(pasta->esq != NULL){
+       //if(pasta-)
       strcpy(pasta->esq->nome, pasta->programa);
       strcat(pasta->esq->nome, "_esq");
     }
@@ -138,10 +150,16 @@ Pasta* remover(Pasta *pasta, char programa[30]){
     return pasta;
   }else if (pasta->esq == NULL){
     Pasta *tmp = pasta->dir;
+    if(strcmp(pasta->nome, "raiz")==0){
+        strcpy(tmp->nome, pasta->nome);
+    }
     free(pasta);
     return tmp;
   }else if (pasta->dir == NULL){
     Pasta *tmp = pasta->esq;
+    if(strcmp(pasta->nome, "raiz")==0){
+        strcpy(tmp->nome, pasta->nome);
+    }
     free(pasta);
     return tmp;
   }else{
@@ -161,8 +179,11 @@ void substituirAntecessor (Pasta *pasta){
   else
     pai->dir = t->esq;
   strcpy(pasta->programa, t->programa);
+  strcpy(pasta->dir->nome, t->programa);
+  strcat(pasta->dir->nome, "_dir");
+  strcpy(pasta->esq->nome, t->programa);
+  strcat(pasta->esq->nome, "_esq");
   free(t);
-  printf("Programa: %s, Pasta: %s | removidos\n", pasta->programa, pasta->nome);
 }
 
 Pasta* inserir (Pasta *pasta, char programa[30]){
@@ -350,4 +371,13 @@ void desaloca(Pasta *raiz) {
         desaloca(raiz->dir);
         free(raiz);
     }
+}
+
+Pasta* buscar(Pasta *raiz, char programa[30]){ 
+    if(raiz == NULL || (strcmp(raiz->programa, programa)) == 0)
+        return raiz;
+    if((strcmp(programa, raiz->programa)) < 0)
+        return buscar(raiz->esq, programa);    
+    else
+        return buscar(raiz->dir, programa);    
 }
