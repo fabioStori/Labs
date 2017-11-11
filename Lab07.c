@@ -31,9 +31,9 @@ void imprimeInOrdem(Pasta *pasta);
 
 void imprimePreOrdem(Pasta *pasta);
 
-void inicializaRaiz(Pasta *raiz);
-
 char **alocaMatriz(int lin, int col);
+
+void imprimeMat(char **mat, int lin, int col);
 
 Pasta *constrArv(char **inOrdem, char **preOrdem, int l, int r, int *indPre, Pasta *pai, Filho filho);
 
@@ -53,17 +53,26 @@ Pasta *criaArv(char **semente, int l, int r, Filho filho, Pasta *pai);
 
 void desaloca(Pasta *raiz);
 
+void extraiSementePre(Pasta *raiz, char **aux, int *ind);
+
+void criaCopia(Pasta *raiz, char **in, char **pre);
+
+int altura(Pasta *raiz);
+
+void imprime(Pasta *raiz);
+
+void imprimeCaminho(Pasta *raiz, char *dire);
+
 Pasta* buscar(Pasta *raiz, char programa[30]);
 
+
 int  main() {
-    int op, P, i, tempo, nivel;
+    int op, P, i, tempo, nivel, NUM_PROG_BACKUP;
     scanf("%d", &P);
     Pasta *raiz;
     NUM_PROG = P;
-    //= malloc(sizeof(Pasta));
-    //inicializaRaiz(raiz);
-    //raiz = NULL;
-    char **inOrdem, **preOrdem, **nomesPastas, programa[30];
+    char **inOrdem, **preOrdem, programa[30], **inSeg, **preSeg;
+
     inOrdem = alocaMatriz(P, 30);
     preOrdem = alocaMatriz(P, 30);
     for (i = 0; i < P; i++)
@@ -103,28 +112,32 @@ int  main() {
                 break;
 
             case (5):
+                inSeg = alocaMatriz(NUM_PROG, 30);
+                preSeg = alocaMatriz(NUM_PROG, 30);
+                NUM_PROG_BACKUP = NUM_PROG;
+                criaCopia(raiz, inSeg, preSeg);
                 break;
 
             case (6):
+                indPre = 0;
+                raiz = constrArv(inSeg, preSeg, 0, NUM_PROG_BACKUP, &indPre, NULL, Raiz);
+                printf("[RESTORE] Sistema restaurado para a versao do backup\n");
                 break;
 
             case (7):
-                
+                imprime(raiz);
                 break;
 
             case (8):
                 imprimeInOrdem(raiz);
                 printf("Total de Prog: %d \n", NUM_PROG);
                 break;
+            default:
+                break;
         }
     }
 }
 
-void inicializaRaiz(Pasta *raiz) {
-    raiz->pai = NULL;
-    raiz->dir = NULL;
-    raiz->esq = NULL;
-}
 Pasta* remover(Pasta *pasta, char programa[30]){
   if(pasta == NULL)
     return NULL;
@@ -209,6 +222,7 @@ Pasta* inserir (Pasta *pasta, char programa[30]){
         novo->pai = NULL;
         strcpy(novo->nome, "raiz");
         strcpy(novo->programa, programa);
+        printf("[INSTALL] Programa %s.exe instalado com sucesso na pasta %s\n", novo->programa, novo->nome);
         return novo;
     }
 }
@@ -227,6 +241,7 @@ void alocarPasta(Pasta *pasta, char programa[30], Filho filho) {
         strcat(novo->nome, "_dir");
         pasta->dir = novo;
     }
+    printf("[INSTALL] Programa %s.exe instalado com sucesso na pasta %s\n", novo->programa, novo->nome);
 }
 
 void imprimeInOrdem(Pasta *pasta) {
@@ -279,10 +294,10 @@ Pasta *constrArv(char **inOrdem, char **preOrdem, int l, int r, int *indPre, Pas
                 strcat(novo->nome, "_dir");
         } else
             strcpy(novo->nome, "raiz");
-        novo->esq = constrArv(inOrdem, preOrdem, l, i, indPre, novo, Esq);
+        novo->esq = constrArv(inOrdem, preOrdem, l, i , indPre, novo, Esq);
         novo->dir = constrArv(inOrdem, preOrdem, i + 1, r, indPre, novo, Dir);
         return novo;
-    } else
+   } else
         return NULL;
 }
 
@@ -310,11 +325,11 @@ Pasta* balanceamento(Pasta *raiz) {
     int indice=0;
     char **aux = alocaMatriz(NUM_PROG, 30);
     extraiSemente(raiz, aux, &indice);
-    imprimeMat(aux, NUM_PROG, 30);
+    //imprimeMat(aux, NUM_PROG, 30);
     desaloca(raiz);
     raiz = criaArv(aux, 0, NUM_PROG-1, Raiz, NULL);
-
-    imprimePreOrdem(raiz);
+    //imprimePreOrdem(raiz);
+    printf("[OPTIMIZE] O sistema de acesso a programas foi otimizado\n");
     return raiz;
 }
 void extraiSemente(Pasta *raiz, char **aux, int *indice){
@@ -328,9 +343,9 @@ void extraiSemente(Pasta *raiz, char **aux, int *indice){
 }
 Pasta *criaArv(char **semente, int l, int r, Filho filho, Pasta *pai){
     if (r > l) {
-        int meio = floor((r - l) / 2);
+        float meio = l + ((float)r-(float)l)/2;
         Pasta *novo = malloc(sizeof(Pasta));
-        strcpy(novo->programa, semente[meio]);
+        strcpy(novo->programa, semente[(int)meio]);
         novo->pai = pai;
         if (pai) {
             strcpy(novo->nome, pai->programa);
@@ -341,8 +356,8 @@ Pasta *criaArv(char **semente, int l, int r, Filho filho, Pasta *pai){
         } else
             strcpy(novo->nome, "raiz");
 
-        novo->esq = criaArv(semente, l, meio-1, Esq, novo);
-        novo->dir = criaArv(semente, meio+1, r, Dir, novo);
+        novo->esq = criaArv(semente, l, (int)meio-1, Esq, novo);
+        novo->dir = criaArv(semente, (int)meio+1, r, Dir, novo);
         return novo;
     }
     else if(l == r) {
@@ -372,6 +387,38 @@ void desaloca(Pasta *raiz) {
         free(raiz);
     }
 }
+void extraiSementePre(Pasta *raiz, char **aux, int *ind){
+    if(raiz){
+        strcpy(aux[(*ind)++], raiz->programa);
+        extraiSementePre(raiz->esq, aux, ind);
+        extraiSementePre(raiz->dir, aux, ind);
+    }
+}
+
+void criaCopia(Pasta *raiz, char **in, char **pre) {
+    int indice1 = 0, indice2 = 0;
+    extraiSemente(raiz, in, &indice1);
+    extraiSementePre(raiz, pre, &indice2);
+    printf("[BACKUP] Configuracao atual do sistema salva com sucesso\n");
+}
+
+void imprime(Pasta *raiz){
+    char *diretorio = malloc(3*sizeof(char));
+    strcpy(diretorio, "C:");
+    printf("[PATHS]\n");
+    imprimeCaminho(raiz, diretorio);
+}
+
+void imprimeCaminho(Pasta *raiz, char *dire){
+    if(raiz) {
+        char *atual = malloc((strlen(dire)+34)*sizeof(char));
+        strcpy(atual, dire);
+        strcat(atual, "/");
+        strcat(atual, raiz->nome);
+        imprimeCaminho(raiz->esq, atual);
+        printf("%s/%s.exe\n", atual, raiz->programa);
+        imprimeCaminho(raiz->dir, atual);
+    }
 
 Pasta* buscar(Pasta *raiz, char programa[30]){ 
     if(raiz == NULL || (strcmp(raiz->programa, programa)) == 0)
@@ -380,4 +427,5 @@ Pasta* buscar(Pasta *raiz, char programa[30]){
         return buscar(raiz->esq, programa);    
     else
         return buscar(raiz->dir, programa);    
+
 }
