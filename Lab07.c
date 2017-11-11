@@ -9,6 +9,9 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<string.h>
+#include <math.h>
+
+int NUM_PROG;
 
 typedef enum {Esq, Dir, Raiz} Filho;
 
@@ -26,6 +29,8 @@ void alocarPasta (Pasta *pasta, char programa[30], Filho filho);
 
 void imprimeInOrdem(Pasta *pasta);
 
+void imprimePreOrdem(Pasta *pasta);
+
 void inicializaRaiz(Pasta *raiz);
 
 char **alocaMatriz(int lin, int col);
@@ -40,10 +45,19 @@ void substituirAntecessor(Pasta *pasta);
 
 void testeVelocidade(int t_gasto, int t_max, char *prog);
 
+Pasta* balanceamento(Pasta *raiz);
+
+void extraiSemente(Pasta *raiz, char **aux, int *indice);
+
+Pasta *criaArv(char **semente, int l, int r, Filho filho, Pasta *pai);
+
+void desaloca(Pasta *raiz);
+
 int  main() {
     int op, P, i, tempo, nivel;
     scanf("%d", &P);
     Pasta *raiz;
+    NUM_PROG = P;
     //= malloc(sizeof(Pasta));
     //inicializaRaiz(raiz);
     //raiz = NULL;
@@ -63,20 +77,22 @@ int  main() {
             case (1):
                 scanf("%s", programa);
                 raiz = inserir(raiz, programa);
+                NUM_PROG++;
                 break;
 
             case (2):
                 scanf("%s", programa);
                 raiz = remover(raiz, programa);
+                NUM_PROG--;
                 break;
 
             case (3):
-
                 scanf("%s %d", programa, &tempo);
                 testeVelocidade(nivelPrograma(raiz, programa, 0), tempo, programa);
                 break;
 
             case (4):
+                raiz = balanceamento(raiz);
                 break;
 
             case (5):
@@ -87,6 +103,7 @@ int  main() {
 
             case (7):
                 imprimeInOrdem(raiz);
+                printf("Total de Prog: %d \n", NUM_PROG);
                 break;
         }
     }
@@ -138,32 +155,31 @@ void substituirAntecessor(Pasta *pasta) {
     printf("Programa: %s, Pasta: %s | removidos\n", pasta->programa, pasta->nome);
 }
 
- Pasta *inserir(Pasta *pasta, char programa[30]) {
-     if (pasta) {
-         int teste = strcmp(programa, pasta->programa);    //testa se o programa e maior ou menor
-         if (teste < 0) {      //se for menor, vai pra esquerda
-             if (pasta->esq == NULL)    //e se o da esquerda for nulo, insere
-                 alocarPasta(pasta, programa, Esq);
-             else
-                 inserir(pasta->esq, programa);    //se nao, testa o da esquerda
-         } else {      //se nao for menor, é maior, logo executa um procedimento analogo para a direita
-             if (pasta->dir == NULL)
-                 alocarPasta(pasta, programa, Dir);
-             else
-                 inserir(pasta->dir, programa);
-         }
-         return pasta;
-     } else {    //caso em que a arvore esta vazia
-         Pasta *novo = malloc(sizeof(Pasta));
-         novo->dir = NULL;
-         novo->esq = NULL;
-         novo->pai = NULL;
-         strcpy(novo->nome, "raiz");
-         strcpy(novo->programa, programa);
-         novo;
-         return novo;
-     }
- }
+Pasta *inserir(Pasta *pasta, char programa[30]) {
+    if (pasta) {
+        int teste = strcmp(programa, pasta->programa);    //testa se o programa e maior ou menor
+        if (teste < 0) {      //se for menor, vai pra esquerda
+            if (pasta->esq == NULL)    //e se o da esquerda for nulo, insere
+                alocarPasta(pasta, programa, Esq);
+            else
+                inserir(pasta->esq, programa);    //se nao, testa o da esquerda
+        } else {      //se nao for menor, é maior, logo executa um procedimento analogo para a direita
+            if (pasta->dir == NULL)
+                alocarPasta(pasta, programa, Dir);
+            else
+                inserir(pasta->dir, programa);
+        }
+        return pasta;
+    } else {    //caso em que a arvore esta vazia
+        Pasta *novo = malloc(sizeof(Pasta));
+        novo->dir = NULL;
+        novo->esq = NULL;
+        novo->pai = NULL;
+        strcpy(novo->nome, "raiz");
+        strcpy(novo->programa, programa);
+        return novo;
+    }
+}
 
 void alocarPasta(Pasta *pasta, char programa[30], Filho filho) {
     Pasta *novo = malloc(sizeof(Pasta));
@@ -181,71 +197,150 @@ void alocarPasta(Pasta *pasta, char programa[30], Filho filho) {
     }
 }
 
- void imprimeInOrdem(Pasta *pasta) {
-     if (pasta) {
-         imprimeInOrdem(pasta->esq);
-         printf("Programa: %s | Pasta: %s\n", pasta->programa, pasta->nome);
-         imprimeInOrdem(pasta->dir);
-     }
- }
-char **alocaMatriz(int lin, int col) {     
+void imprimeInOrdem(Pasta *pasta) {
+    if (pasta) {
+        imprimeInOrdem(pasta->esq);
+        printf("Programa: %s | Pasta: %s\n", pasta->programa, pasta->nome);
+        imprimeInOrdem(pasta->dir);
+    }
+}
+
+void imprimePreOrdem(Pasta *pasta) {
+    if (pasta) {
+        printf("Programa: %s | Pasta: %s\n", pasta->programa, pasta->nome);
+        imprimeInOrdem(pasta->esq);
+        imprimeInOrdem(pasta->dir);
+    }
+}
+
+char **alocaMatriz(int lin, int col) {
     char **m = (char **) malloc(lin * sizeof(char *));
     for (int i = 0; i < lin; i++) {
         m[i] = (char *) malloc(col * sizeof(char));
         for (int j = 0; j < col; j++)
-            m[i][j] = 'A';
+            m[i][j] = ' ';
     }
     return m;
 }
- void imprimeMat(char **mat, int lin, int col) {
-     for (int i = 0; i < lin; i++) {
-         for (int j = 0; j < col; j++)
-             printf("%c ", mat[i][j]);
-         printf("\n");
-     }
- }
+void imprimeMat(char **mat, int lin, int col) {
+    for (int i = 0; i < lin; i++) {
+        for (int j = 0; j < col; j++)
+            printf("%c ", mat[i][j]);
+        printf("\n");
+    }
+}
 
-    Pasta *constrArv(char **inOrdem, char **preOrdem, int l, int r, int *indPre, Pasta *pai, Filho filho) {
-        if (l < r) {
-            char prog[30];
-            strcpy(prog, preOrdem[(*indPre)++]);
-            int i = l;
-            while (strcmp(prog, inOrdem[i]))
-                i++;
-            Pasta *novo = malloc(sizeof(Pasta));
-            strcpy(novo->programa, prog);
-            if (pai) {
-                novo->pai = pai;
-                strcpy(novo->nome, pai->programa);
-                if (filho == Esq)
-                    strcat(novo->nome, "_esq");
-                if (filho == Dir)
-                    strcat(novo->nome, "_dir");
-            } else
-                strcpy(novo->nome, "raiz");
-            novo->esq = constrArv(inOrdem, preOrdem, l, i, indPre, novo, Esq);
-            novo->dir = constrArv(inOrdem, preOrdem, i + 1, r, indPre, novo, Dir);
-            return novo;
+Pasta *constrArv(char **inOrdem, char **preOrdem, int l, int r, int *indPre, Pasta *pai, Filho filho) {
+    if (l < r) {
+        char prog[30];
+        strcpy(prog, preOrdem[(*indPre)++]);
+        int i = l;
+        while (strcmp(prog, inOrdem[i]))
+            i++;
+        Pasta *novo = malloc(sizeof(Pasta));
+        strcpy(novo->programa, prog);
+        novo->pai = pai;//Atualizei mas ainda não testei, se der merda coloque essa linha dentro de if(pai)
+        if (pai) {
+            strcpy(novo->nome, pai->programa);
+            if (filho == Esq)
+                strcat(novo->nome, "_esq");
+            if (filho == Dir)
+                strcat(novo->nome, "_dir");
         } else
-            return NULL;
-    }
+            strcpy(novo->nome, "raiz");
+        novo->esq = constrArv(inOrdem, preOrdem, l, i, indPre, novo, Esq);
+        novo->dir = constrArv(inOrdem, preOrdem, i + 1, r, indPre, novo, Dir);
+        return novo;
+    } else
+        return NULL;
+}
 
-    int nivelPrograma(Pasta *raiz, char *busca, int nivel) {
-        if (raiz == NULL)
-            return -1;
-        if (!strcmp(raiz->programa, busca))
-            return nivel;
-        int esquerda = nivelPrograma(raiz->esq, busca, nivel + 1);
-        int direita = nivelPrograma(raiz->dir, busca, nivel + 1);
+int nivelPrograma(Pasta *raiz, char *busca, int nivel) {
+    if (raiz == NULL)
+        return -1;
+    if (!strcmp(raiz->programa, busca))
+        return nivel;
+    int esquerda = nivelPrograma(raiz->esq, busca, nivel + 1);
+    int direita = nivelPrograma(raiz->dir, busca, nivel + 1);
 
-        if (esquerda == -1)
-            return direita;
-        else
-            return esquerda;
-    }
+    if (esquerda == -1)
+        return direita;
+    else
+        return esquerda;
+}
 void testeVelocidade(int t_gasto, int t_max, char *prog) {
     if (t_gasto > t_max)
         printf("[DELAY][FAIL] O acesso ao programa %s.exe ultrapassou o limite de %d segundo\n", prog, t_max);
     else
         printf("[DELAY][OK] O acesso ao programa %s.exe foi concluido em %d segundos\n", prog, t_gasto);
+}
+
+Pasta* balanceamento(Pasta *raiz) {
+    int indice=0;
+    char **aux = alocaMatriz(NUM_PROG, 30);
+    extraiSemente(raiz, aux, &indice);
+    imprimeMat(aux, NUM_PROG, 30);
+    desaloca(raiz);
+    raiz = criaArv(aux, 0, NUM_PROG-1, Raiz, NULL);
+
+    imprimePreOrdem(raiz);
+    return raiz;
+}
+
+
+void extraiSemente(Pasta *raiz, char **aux, int *indice){
+    if(raiz){
+        //strcpy(aux[(*indice)++], raiz->programa);
+        extraiSemente(raiz->esq, aux, indice);
+        strcpy(aux[(*indice)++], raiz->programa);
+        extraiSemente(raiz->dir, aux, indice);
+        //strcpy(aux[(*indice)++], raiz->programa);
+    }
+}
+
+Pasta *criaArv(char **semente, int l, int r, Filho filho, Pasta *pai){
+    if (r > l) {
+        int meio = floor((r - l) / 2);
+        Pasta *novo = malloc(sizeof(Pasta));
+        strcpy(novo->programa, semente[meio]);
+        novo->pai = pai;
+        if (pai) {
+            strcpy(novo->nome, pai->programa);
+            if (filho == Esq)
+                strcat(novo->nome, "_esq");
+            if (filho == Dir)
+                strcat(novo->nome, "_dir");
+        } else
+            strcpy(novo->nome, "raiz");
+
+        novo->esq = criaArv(semente, l, meio-1, Esq, novo);
+        novo->dir = criaArv(semente, meio+1, r, Dir, novo);
+        return novo;
+    }
+    else if(l == r) {
+        Pasta *novo = malloc(sizeof(Pasta));
+        strcpy(novo->programa, semente[r]);
+        novo->pai = pai;
+        novo->esq = NULL;
+        novo->dir = NULL;
+        if (pai) {
+            strcpy(novo->nome, pai->programa);
+            if (filho == Esq)
+                strcat(novo->nome, "_esq");
+            if (filho == Dir)
+                strcat(novo->nome, "_dir");
+        } else
+            strcpy(novo->nome, "raiz");
+        return novo;
+    }
+    else
+        return NULL;
+}
+
+void desaloca(Pasta *raiz) {
+    if (raiz) {
+        desaloca(raiz->esq);
+        desaloca(raiz->dir);
+        free(raiz);
+    }
 }
