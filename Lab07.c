@@ -86,7 +86,8 @@ int  main(){
                 imprimeInOrdem(raiz);
                 break;
         }
-
+    }
+}
 void inicializaRaiz(Pasta *raiz) {
     raiz->pai = NULL;
     raiz->dir = NULL;
@@ -102,18 +103,30 @@ Pasta* remover(Pasta *pasta, char programa[30]){
   int teste = strcmp(programa, pasta->programa);
   if(teste<0){
     pasta->esq = remover(pasta->esq, programa);
+    if(pasta->esq != NULL){
+      strcpy(pasta->esq->nome, pasta->programa);
+      strcat(pasta->esq->nome, "_esq");
+    }
     return pasta;
   }else if(teste>0){
     pasta->dir = remover(pasta->dir, programa);
-    return pasta;      
+    if(pasta->dir != NULL){
+      strcpy(pasta->dir->nome, pasta->programa);
+      strcat(pasta->dir->nome, "_dir");
+    }
+    return pasta;
   }else if (pasta->esq == NULL){
-    return pasta->dir;
+    Pasta *tmp = pasta->dir;
+    free(pasta);
+    return tmp;
   }else if (pasta->dir == NULL){
-    return pasta->esq;
+    Pasta *tmp = pasta->esq;
+    free(pasta);
+    return tmp;
   }else{
     substituirAntecessor(pasta);
     return pasta;
-  }  
+  }
 }
 
 void substituirAntecessor (Pasta *pasta){
@@ -127,6 +140,7 @@ void substituirAntecessor (Pasta *pasta){
   else
     pai->dir = t->esq;
   strcpy(pasta->programa, t->programa);
+  free(t);
   printf("Programa: %s, Pasta: %s | removidos\n", pasta->programa, pasta->nome);
 }
 
@@ -172,7 +186,7 @@ void alocarPasta (Pasta *pasta, char programa[30], Filho filho){
             pasta->dir = novo;
         }
     }
-  
+
 void imprimeInOrdem(Pasta *pasta){
     if(pasta){
         imprimeInOrdem(pasta->esq);
@@ -182,21 +196,24 @@ void imprimeInOrdem(Pasta *pasta){
     }
 }
 char **alocaMatriz(int lin, int col){
+    int i, j;
     char **m = (char**) malloc(lin*sizeof(char *));
-    for(int i = 0; i < lin; i++){
+    for(i = 0; i < lin; i++){
         m[i] = (char*) malloc(col*sizeof(char));
-        for(int j = 0; j < col; j++)
+        for(j = 0; j < col; j++)
             m[i][j] = 'A';
     }
     return m;
 }
 
 void imprimeMat(char **mat, int lin, int col){
-    for(int i = 0; i < lin; i++){
-        for(int j = 0; j < col; j++)
+    int i, j;
+    for(i = 0; i < lin; i++){
+        for(j = 0; j < col; j++)
             printf("%c ", mat[i][j]);
         printf("\n");
     }
+}
 
 Pasta *constrArv(char **inOrdem, char **preOrdem, int l, int r, int *indPre, Pasta *pai, Filho filho){
     if(l < r) {
