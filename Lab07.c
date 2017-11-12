@@ -6,9 +6,9 @@
   RA: 193325
   Turma E - MC202
 */
-#include<stdlib.h>
-#include<stdio.h>
-#include<string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <math.h>
 
 int NUM_PROG;
@@ -31,9 +31,9 @@ void imprimeInOrdem(Pasta *pasta);
 
 void imprimePreOrdem(Pasta *pasta);
 
-void inicializaRaiz(Pasta *raiz);
-
 char **alocaMatriz(int lin, int col);
+
+void imprimeMat(char **mat, int lin, int col);
 
 Pasta *constrArv(char **inOrdem, char **preOrdem, int l, int r, int *indPre, Pasta *pai, Filho filho);
 
@@ -53,15 +53,26 @@ Pasta *criaArv(char **semente, int l, int r, Filho filho, Pasta *pai);
 
 void desaloca(Pasta *raiz);
 
+void extraiSementePre(Pasta *raiz, char **aux, int *ind);
+
+void criaCopia(Pasta *raiz, char **in, char **pre);
+
+int altura(Pasta *raiz);
+
+void imprime(Pasta *raiz);
+
+void imprimeCaminho(Pasta *raiz, char *dire);
+
+Pasta* buscar(Pasta *raiz, char programa[30]);
+
+
 int  main() {
-    int op, P, i, tempo, nivel;
+    int op, P, i, tempo, nivel, NUM_PROG_BACKUP;
     scanf("%d", &P);
     Pasta *raiz;
     NUM_PROG = P;
-    //= malloc(sizeof(Pasta));
-    //inicializaRaiz(raiz);
-    //raiz = NULL;
-    char **inOrdem, **preOrdem, programa[30];
+    char **inOrdem, **preOrdem, programa[30], **inSeg, **preSeg;
+
     inOrdem = alocaMatriz(P, 30);
     preOrdem = alocaMatriz(P, 30);
     for (i = 0; i < P; i++)
@@ -69,6 +80,7 @@ int  main() {
     for (i = 0; i < P; i++)
         scanf("%s", preOrdem[i]);
     int indPre = 0;
+    NUM_PROG_BACKUP = NUM_PROG;
     raiz = constrArv(inOrdem, preOrdem, 0, P, &indPre, NULL, Raiz);
 
     while (scanf("%d", &op) != EOF) {    //ate o arquivo acabar...
@@ -82,8 +94,13 @@ int  main() {
 
             case (2):
                 scanf("%s", programa);
-                raiz = remover(raiz, programa);
-                NUM_PROG--;
+                if ((buscar(raiz, programa)) == NULL)
+                    printf("[UNINSTALL] Nao foi encontrado no sistema nenhum programa com nome %s\n", programa);
+                else{
+                    raiz = remover(raiz, programa);
+                    NUM_PROG--;
+                    printf("[UNINSTALL] Programa %s.exe desinstalado com sucesso\n", programa);
+                }
                 break;
 
             case (3):
@@ -96,73 +113,93 @@ int  main() {
                 break;
 
             case (5):
+                inOrdem = alocaMatriz(NUM_PROG, 30);
+                preOrdem = alocaMatriz(NUM_PROG, 30);
+                NUM_PROG_BACKUP = NUM_PROG;
+                criaCopia(raiz, inOrdem, preOrdem);
                 break;
 
             case (6):
+                indPre = 0;
+                raiz = constrArv(inOrdem, preOrdem, 0, NUM_PROG_BACKUP, &indPre, NULL, Raiz);
+                NUM_PROG = NUM_PROG_BACKUP;
+                printf("[RESTORE] Sistema restaurado para a versao do backup\n");
                 break;
 
             case (7):
+                imprime(raiz);
+                printf("NUM_PROg: %d\n", NUM_PROG);
+                break;
+
+            case (8):
                 imprimeInOrdem(raiz);
                 printf("Total de Prog: %d \n", NUM_PROG);
+                break;
+            default:
                 break;
         }
     }
 }
 
-void inicializaRaiz(Pasta *raiz) {
-    raiz->pai = NULL;
-    raiz->dir = NULL;
-    raiz->esq = NULL;
-}
 Pasta* remover(Pasta *pasta, char programa[30]){
-  if(pasta == NULL)
-    return NULL;
-  if((strcmp(pasta->nome, "raiz")) == 0 && pasta->esq == NULL && pasta->dir == NULL){   //caso em que existe apenas a raiz sem filhos
-    free(pasta);
-    return NULL;
-  }
-  int teste = strcmp(programa, pasta->programa);
-  if(teste<0){
-    pasta->esq = remover(pasta->esq, programa);
-    if(pasta->esq != NULL){
-      strcpy(pasta->esq->nome, pasta->programa);
-      strcat(pasta->esq->nome, "_esq");
+    if(pasta == NULL)
+        return NULL;
+    if((strcmp(pasta->nome, "raiz")) == 0 && pasta->esq == NULL && pasta->dir == NULL){   //caso em que existe apenas a raiz sem filhos
+        free(pasta);
+        return NULL;
     }
-    return pasta;
-  }else if(teste>0){
-    pasta->dir = remover(pasta->dir, programa);
-    if(pasta->dir != NULL){
-      strcpy(pasta->dir->nome, pasta->programa);
-      strcat(pasta->dir->nome, "_dir");
+    int teste = strcmp(programa, pasta->programa);
+    if(teste<0){
+        pasta->esq = remover(pasta->esq, programa);
+        if(pasta->esq != NULL){
+            //if(pasta-)
+            strcpy(pasta->esq->nome, pasta->programa);
+            strcat(pasta->esq->nome, "_esq");
+        }
+        return pasta;
+    }else if(teste>0){
+        pasta->dir = remover(pasta->dir, programa);
+        if(pasta->dir != NULL){
+            strcpy(pasta->dir->nome, pasta->programa);
+            strcat(pasta->dir->nome, "_dir");
+        }
+        return pasta;
+    }else if (pasta->esq == NULL){
+        Pasta *tmp = pasta->dir;
+        if(strcmp(pasta->nome, "raiz")==0){
+            strcpy(tmp->nome, pasta->nome);
+        }
+        free(pasta);
+        return tmp;
+    }else if (pasta->dir == NULL){
+        Pasta *tmp = pasta->esq;
+        if(strcmp(pasta->nome, "raiz")==0){
+            strcpy(tmp->nome, pasta->nome);
+        }
+        free(pasta);
+        return tmp;
+    }else{
+        substituirAntecessor(pasta);
+        return pasta;
     }
-    return pasta;
-  }else if (pasta->esq == NULL){
-    Pasta *tmp = pasta->dir;
-    free(pasta);
-    return tmp;
-  }else if (pasta->dir == NULL){
-    Pasta *tmp = pasta->esq;
-    free(pasta);
-    return tmp;
-  }else{
-    substituirAntecessor(pasta);
-    return pasta;
-  }
 }
 
 void substituirAntecessor (Pasta *pasta){
-  Pasta *pai = pasta, *t = pasta->esq;
-  while(t->dir!=NULL){
-    pai = t;
-    t = t->dir;
-  }
-  if(pai->esq == t)
-    pai->esq = t->dir;
-  else
-    pai->dir = t->esq;
-  strcpy(pasta->programa, t->programa);
-  free(t);
-  printf("Programa: %s, Pasta: %s | removidos\n", pasta->programa, pasta->nome);
+    Pasta *pai = pasta, *t = pasta->esq;
+    while(t->dir!=NULL){
+        pai = t;
+        t = t->dir;
+    }
+    if(pai->esq == t)
+        pai->esq = t->dir;
+    else
+        pai->dir = t->esq;
+    strcpy(pasta->programa, t->programa);
+    strcpy(pasta->dir->nome, t->programa);
+    strcat(pasta->dir->nome, "_dir");
+    strcpy(pasta->esq->nome, t->programa);
+    strcat(pasta->esq->nome, "_esq");
+    free(t);
 }
 
 Pasta* inserir (Pasta *pasta, char programa[30]){
@@ -188,6 +225,7 @@ Pasta* inserir (Pasta *pasta, char programa[30]){
         novo->pai = NULL;
         strcpy(novo->nome, "raiz");
         strcpy(novo->programa, programa);
+        printf("[INSTALL] Programa %s.exe instalado com sucesso na pasta %s\n", novo->programa, novo->nome);
         return novo;
     }
 }
@@ -206,6 +244,7 @@ void alocarPasta(Pasta *pasta, char programa[30], Filho filho) {
         strcat(novo->nome, "_dir");
         pasta->dir = novo;
     }
+    printf("[INSTALL] Programa %s.exe instalado com sucesso na pasta %s\n", novo->programa, novo->nome);
 }
 
 void imprimeInOrdem(Pasta *pasta) {
@@ -258,7 +297,7 @@ Pasta *constrArv(char **inOrdem, char **preOrdem, int l, int r, int *indPre, Pas
                 strcat(novo->nome, "_dir");
         } else
             strcpy(novo->nome, "raiz");
-        novo->esq = constrArv(inOrdem, preOrdem, l, i, indPre, novo, Esq);
+        novo->esq = constrArv(inOrdem, preOrdem, l, i , indPre, novo, Esq);
         novo->dir = constrArv(inOrdem, preOrdem, i + 1, r, indPre, novo, Dir);
         return novo;
     } else
@@ -289,11 +328,11 @@ Pasta* balanceamento(Pasta *raiz) {
     int indice=0;
     char **aux = alocaMatriz(NUM_PROG, 30);
     extraiSemente(raiz, aux, &indice);
-    imprimeMat(aux, NUM_PROG, 30);
+    //imprimeMat(aux, NUM_PROG, 30);
     desaloca(raiz);
     raiz = criaArv(aux, 0, NUM_PROG-1, Raiz, NULL);
-
-    imprimePreOrdem(raiz);
+    //imprimePreOrdem(raiz);
+    printf("[OPTIMIZE] O sistema de acesso a programas foi otimizado\n");
     return raiz;
 }
 void extraiSemente(Pasta *raiz, char **aux, int *indice){
@@ -307,9 +346,9 @@ void extraiSemente(Pasta *raiz, char **aux, int *indice){
 }
 Pasta *criaArv(char **semente, int l, int r, Filho filho, Pasta *pai){
     if (r > l) {
-        int meio = floor((r - l) / 2);
+        float meio = l + ((float)r-(float)l)/2;
         Pasta *novo = malloc(sizeof(Pasta));
-        strcpy(novo->programa, semente[meio]);
+        strcpy(novo->programa, semente[(int)meio]);
         novo->pai = pai;
         if (pai) {
             strcpy(novo->nome, pai->programa);
@@ -320,8 +359,8 @@ Pasta *criaArv(char **semente, int l, int r, Filho filho, Pasta *pai){
         } else
             strcpy(novo->nome, "raiz");
 
-        novo->esq = criaArv(semente, l, meio-1, Esq, novo);
-        novo->dir = criaArv(semente, meio+1, r, Dir, novo);
+        novo->esq = criaArv(semente, l, (int)meio-1, Esq, novo);
+        novo->dir = criaArv(semente, (int)meio+1, r, Dir, novo);
         return novo;
     }
     else if(l == r) {
@@ -351,3 +390,46 @@ void desaloca(Pasta *raiz) {
         free(raiz);
     }
 }
+void extraiSementePre(Pasta *raiz, char **aux, int *ind){
+    if(raiz){
+        strcpy(aux[(*ind)++], raiz->programa);
+        extraiSementePre(raiz->esq, aux, ind);
+        extraiSementePre(raiz->dir, aux, ind);
+    }
+}
+
+void criaCopia(Pasta *raiz, char **in, char **pre) {
+    int indice1 = 0, indice2 = 0;
+    extraiSemente(raiz, in, &indice1);
+    extraiSementePre(raiz, pre, &indice2);
+    printf("[BACKUP] Configuracao atual do sistema salva com sucesso\n");
+}
+
+void imprime(Pasta *raiz){
+    char *diretorio = malloc(3*sizeof(char));
+    strcpy(diretorio, "C:");
+    printf("[PATHS]\n");
+    imprimeCaminho(raiz, diretorio);
+}
+
+void imprimeCaminho(Pasta *raiz, char *dire) {
+    if (raiz) {
+        char *atual = malloc((strlen(dire) + 34) * sizeof(char));
+        strcpy(atual, dire);
+        strcat(atual, "/");
+        strcat(atual, raiz->nome);
+        imprimeCaminho(raiz->esq, atual);
+        printf("%s/%s.exe\n", atual, raiz->programa);
+        imprimeCaminho(raiz->dir, atual);
+    }
+}
+
+    Pasta *buscar(Pasta *raiz, char programa[30]) {
+        if (raiz == NULL || (strcmp(raiz->programa, programa)) == 0)
+            return raiz;
+        if ((strcmp(programa, raiz->programa)) < 0)
+            return buscar(raiz->esq, programa);
+        else
+            return buscar(raiz->dir, programa);
+
+    }
