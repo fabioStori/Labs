@@ -11,77 +11,144 @@
 #include <string.h>
 #include <math.h>
 
-int NUM_PROG;
+int NUM_PROG;       //variavel global que controla a quantidade de programas na arvore
 
-typedef enum {Esq, Dir, Raiz} Filho;
+typedef enum {Esq, Dir, Raiz} Filho;        //tipos de pastas
 
 typedef struct Pasta{
     struct Pasta *dir;
     struct Pasta *esq;
     struct Pasta *pai;
-    char programa[30];
-    char nome[34];
+    char programa[30];  //nome do programa
+    char nome[34];  //nome da pasta
 }Pasta;
 
-Pasta* inserir (Pasta *pasta, char programa[30]);
-
-void alocarPasta (Pasta *pasta, char programa[30], Filho filho);
-
-void imprimeInOrdem(Pasta *pasta);
-
-void imprimePreOrdem(Pasta *pasta);
-
 char **alocaMatriz(int lin, int col);
-
-void imprimeMat(char **mat, int lin, int col);
-
+/*
+Aloca dinamicamente uma matriz [lin X col]
+lin: numero de linhas
+col: numero de colunas
+*/
 Pasta *constrArv(char **inOrdem, char **preOrdem, int l, int r, int *indPre, Pasta *pai, Filho filho);
-
-int nivelPrograma(Pasta *raiz, char *busca, int nivel);
-
+/*
+Constroi uma arvore binaria de busca a partir de 2 sementes (inOrdem e preOrdem). Utilizado para gerar a arvore inicial
+l: numero do indice mais a esquerda que sera considerado
+r: numero do indice mais a direita que sera considerado
+*indPre: guarda o indice da raiz pela semente preOrdem
+*pai: ponteiro pro pai
+filho: passa informacao se sera considerado i filho da esquerda ou da direita
+*/
+Pasta* inserir (Pasta *pasta, char programa[30]);
+/*
+Insere programa em uma arvore binaria de busca, seguindo o padrao de ordem lexigrafica
+*pasta: ponteiro para a raiz da arvore binaria de busca
+programa[30]: string com o nome do programa que sera inserido
+*/
+void alocarPasta (Pasta *pasta, char programa[30], Filho filho);
+/*
+Aloca um novo programa, atualizando o nome de sua pasta
+*pasta: ponteiro para a raiz da arvore binaria de busca
+programa[30]: string com o nome do programa que sera inserido
+filho: lado da arvore que sera inserido
+*/
 Pasta* remover(Pasta *pasta, char programa[30]);
-
-void substituirAntecessor(Pasta *pasta);
-
-void testeVelocidade(int t_gasto, int t_max, char *prog);
-
-Pasta* balanceamento(Pasta *raiz);
-
-void extraiSemente(Pasta *raiz, char **aux, int *indice);
-
-Pasta *criaArv(char **semente, int l, int r, Filho filho, Pasta *pai);
-
-void desaloca(Pasta *raiz);
-
-void extraiSementePre(Pasta *raiz, char **aux, int *ind);
-
-void criaCopia(Pasta *raiz, char **in, char **pre);
-
-int altura(Pasta *raiz);
-
-void imprime(Pasta *raiz);
-
-void imprimeCaminho(Pasta *raiz, char *dire);
-
+/*
+Remove um programa e ajusta o nome das pastas da arvore binaria de busca
+*pasta: ponteiro para a raiz da arvore binaria de busca
+programa[30]: string que esta sendo buscada
+*/
 Pasta* buscar(Pasta *raiz, char programa[30]);
-
+/*
+Funcao que busca um determinado programa na arvore. Retorna NULL se nao acha tal programa
+*raiz: ponteiro para a raiz da arvore binaria de busca
+programa[30]: programa que esta sendo procurado
+*/
+void substituirAntecessor(Pasta *pasta);
+/*
+Acha o antecessor lexigrafico do programa e o troca de lugar com a pasta pedida
+*pasta: ponteiro para a pasta que sera procurada o antecessor
+*/
+void testeVelocidade(int t_gasto, int t_max, char *prog);
+/*
+Testa se o programa esta sendo executado na velocidade desejada (tempo medido pelo nivel do programa)
+t_gasto: tempo gasto (niveis percorridos) ate o programa ser aberto
+t_max: tempo maximo permitido para o programa ser aberto
+*prog: programa que sera testado
+*/
+int nivelPrograma(Pasta *raiz, char *busca, int nivel);
+/*
+Busca um programa especifico
+*raiz: ponteiro para a raiz da arvore binaria de busca
+*busca: string que esta sendo buscada
+nivel: nivel atual da arvore binaria
+*/
+Pasta* balanceamento(Pasta *raiz);
+/*
+Cria uma arvore binaria de busca ordenada lexigraficamente nova e balanceada, a partir de uma antiga
+*pasta: ponteiro para a raiz da arvore binaria
+*/
+void extraiSementeIn(Pasta *raiz, char **aux, int *indice);
+/*
+Extrai semente InOrdem de uma arvore binaria de busca. Utilizada para criar copias de segurança e criar arvores
+*pasta: ponteiro para a raiz da arvore binaria de busca
+**aux: vetor de strings em que sera guardada a semente
+*indice: usado para o controle de indices na funcao
+*/
+void extraiSementePre(Pasta *raiz, char **aux, int *ind);
+/*
+Extrai semente de uma arvore binaria de busca ordenada lexicograficamente a partir de sua raiz
+*raiz: ponteiro para a raiz da arvore binaria de busca
+**aux: vetor de strings em que guardada a semente
+*ind: usado para o controle de indices na funcao
+*/
+Pasta *criaArv(char **semente, int l, int r, Filho filho, Pasta *pai);
+/*
+Constroi uma arvore binaria de busca a partir de uma semente InOrdem criada pela funcao extraiSementeIn. Usado na hora de balancear uma arvore
+l: numero do indice mais a esquerda que sera considerado
+r: numero do indice mais a direita que sera considerado
+*pai: ponteiro pro pai
+filho: passa informacao se sera considerado i filho da esquerda ou da direita
+*/
+void criaCopia(Pasta *raiz, char **in, char **pre);
+/*
+Cria copia de seguranca da arvore atual retirando suas sementes InOrdem e PreOrdem
+*raiz: ponteiro para a raiz da arvore binaria de busca
+**In: vetor de strings em que guardada a semente InOrdem
+**Pre: vetor de strings em que guardada a semente PreOrdem
+*/
+void imprime(Pasta *raiz);
+/*
+Imprime o diretorio de todos os programas salvos na arvore (C:/.../.../etc.exe) em ordem InOrdem
+*raiz: ponteiro para a raiz da arvore binaria de busca
+*/
+void imprimeCaminho(Pasta *raiz, char *dire);
+/*
+Utilizada na funcao imprime. Concatena em uma string os nomes das pastas ate um programa que ainda nao foi visitado
+*raiz: ponteiro para a raiz da arvore binaria de busca
+*dire: string diretorio
+*/
+void desaloca(Pasta *raiz);
+/*
+Desaloca uma arvore inteira
+*raiz: ponteiro para a raiz da arvore binaria de busca
+*/
 
 int  main() {
-    int op, P, i, tempo, nivel, NUM_PROG_BACKUP;
-    scanf("%d", &P);
+    int op, P, i, tempo, NUM_PROG_BACKUP;
+    scanf("%d", &P);        //tamanho inicial da arvore
     Pasta *raiz;
     NUM_PROG = P;
-    char **inOrdem, **preOrdem, programa[30], **inSeg, **preSeg;
-
+    char **inOrdem, **preOrdem, programa[30];
     inOrdem = alocaMatriz(P, 30);
     preOrdem = alocaMatriz(P, 30);
+    //salvando sementes iniciais
     for (i = 0; i < P; i++)
         scanf("%s", inOrdem[i]);
     for (i = 0; i < P; i++)
         scanf("%s", preOrdem[i]);
     int indPre = 0;
     NUM_PROG_BACKUP = NUM_PROG;
-    raiz = constrArv(inOrdem, preOrdem, 0, P, &indPre, NULL, Raiz);
+    raiz = constrArv(inOrdem, preOrdem, 0, P, &indPre, NULL, Raiz);     //construindo arvore inicial
 
     while (scanf("%d", &op) != EOF) {    //ate o arquivo acabar...
 
@@ -94,10 +161,10 @@ int  main() {
 
             case (2):
                 scanf("%s", programa);
-                if ((buscar(raiz, programa)) == NULL)
+                if ((buscar(raiz, programa)) == NULL)   //se nao achar o programa
                     printf("[UNINSTALL] Nao foi encontrado no sistema nenhum programa com nome %s\n", programa);
                 else{
-                    raiz = remover(raiz, programa);
+                    raiz = remover(raiz, programa);     //se achar o programa
                     NUM_PROG--;
                     printf("[UNINSTALL] Programa %s.exe desinstalado com sucesso\n", programa);
                 }
@@ -128,58 +195,53 @@ int  main() {
 
             case (7):
                 imprime(raiz);
-                printf("NUM_PROg: %d\n", NUM_PROG);
                 break;
 
-            case (8):
-                imprimeInOrdem(raiz);
-                printf("Total de Prog: %d \n", NUM_PROG);
-                break;
             default:
                 break;
         }
     }
+    desaloca(raiz);     //liberando todo o espaço da memoria
 }
 
 Pasta* remover(Pasta *pasta, char programa[30]){
-    if(pasta == NULL)
+    if(pasta == NULL)       //pasta em NULL
         return NULL;
     if((strcmp(pasta->nome, "raiz")) == 0 && pasta->esq == NULL && pasta->dir == NULL){   //caso em que existe apenas a raiz sem filhos
         free(pasta);
         return NULL;
     }
     int teste = strcmp(programa, pasta->programa);
-    if(teste<0){
-        pasta->esq = remover(pasta->esq, programa);
-        if(pasta->esq != NULL){
-            //if(pasta-)
-            strcpy(pasta->esq->nome, pasta->programa);
+    if(teste<0){        //se a string programa e menor que o programa atual
+        pasta->esq = remover(pasta->esq, programa);     //vai pro filho da esquerda
+        if(pasta->esq != NULL){     //se tiver um filho esquerdo
+            strcpy(pasta->esq->nome, pasta->programa);  //atualiza o nome de sua pasta
             strcat(pasta->esq->nome, "_esq");
         }
         return pasta;
-    }else if(teste>0){
+    }else if(teste>0){      //analogo, porem para a direita
         pasta->dir = remover(pasta->dir, programa);
         if(pasta->dir != NULL){
             strcpy(pasta->dir->nome, pasta->programa);
             strcat(pasta->dir->nome, "_dir");
         }
         return pasta;
-    }else if (pasta->esq == NULL){
+    }else if (pasta->esq == NULL){      //caso seja a string procurada e nao tem filho esquerdo
         Pasta *tmp = pasta->dir;
         if(strcmp(pasta->nome, "raiz")==0){
             strcpy(tmp->nome, pasta->nome);
         }
-        free(pasta);
+        free(pasta);//libera a memoria
         return tmp;
     }else if (pasta->dir == NULL){
         Pasta *tmp = pasta->esq;
-        if(strcmp(pasta->nome, "raiz")==0){
+        if(strcmp(pasta->nome, "raiz")==0){     //caso seja a string procurada e nao tem filho direito
             strcpy(tmp->nome, pasta->nome);
         }
-        free(pasta);
+        free(pasta);//libera a memoria
         return tmp;
-    }else{
-        substituirAntecessor(pasta);
+    }else{        //caso seja a string procurada e tenha os dois filhos
+        substituirAntecessor(pasta);    //acha o seu antecessor e substitui
         return pasta;
     }
 }
@@ -189,17 +251,22 @@ void substituirAntecessor (Pasta *pasta){
     while(t->dir!=NULL){
         pai = t;
         t = t->dir;
-    }
-    if(pai->esq == t)
+    }   //t sera o antecessor do programa que sera removido
+    //substitui o programa por seu antecessor e ajuda o nome das pastas dos filhos
+    if(pai->esq == t){                  
+        strcpy(pasta->dir->nome, t->programa);
+        strcat(pasta->dir->nome, "_dir");
         pai->esq = t->dir;
-    else
+    }
+    else{
+        strcpy(pasta->dir->nome, t->programa);
+        strcat(pasta->dir->nome, "_dir");
+        strcpy(pasta->esq->nome, t->programa);
+        strcat(pasta->esq->nome, "_esq");
         pai->dir = t->esq;
-    strcpy(pasta->programa, t->programa);
-    strcpy(pasta->dir->nome, t->programa);
-    strcat(pasta->dir->nome, "_dir");
-    strcpy(pasta->esq->nome, t->programa);
-    strcat(pasta->esq->nome, "_esq");
-    free(t);
+    }
+    strcpy(pasta->programa, t->programa);    
+    free(t);    //libera a memoria
 }
 
 Pasta* inserir (Pasta *pasta, char programa[30]){
@@ -247,21 +314,6 @@ void alocarPasta(Pasta *pasta, char programa[30], Filho filho) {
     printf("[INSTALL] Programa %s.exe instalado com sucesso na pasta %s\n", novo->programa, novo->nome);
 }
 
-void imprimeInOrdem(Pasta *pasta) {
-    if (pasta) {
-        imprimeInOrdem(pasta->esq);
-        printf("Programa: %s | Pasta: %s\n", pasta->programa, pasta->nome);
-        imprimeInOrdem(pasta->dir);
-    }
-}
-
-void imprimePreOrdem(Pasta *pasta) {
-    if (pasta) {
-        printf("Programa: %s | Pasta: %s\n", pasta->programa, pasta->nome);
-        imprimeInOrdem(pasta->esq);
-        imprimeInOrdem(pasta->dir);
-    }
-}
 char **alocaMatriz(int lin, int col) {
     char **m = (char **) malloc(lin * sizeof(char *));
     for (int i = 0; i < lin; i++) {
@@ -271,24 +323,17 @@ char **alocaMatriz(int lin, int col) {
     }
     return m;
 }
-void imprimeMat(char **mat, int lin, int col) {
-    for (int i = 0; i < lin; i++) {
-        for (int j = 0; j < col; j++)
-            printf("%c ", mat[i][j]);
-        printf("\n");
-    }
-}
 
 Pasta *constrArv(char **inOrdem, char **preOrdem, int l, int r, int *indPre, Pasta *pai, Filho filho) {
-    if (l < r) {
+    if (l < r) {    //enquanto left for maior que right...
         char prog[30];
-        strcpy(prog, preOrdem[(*indPre)++]);
+        strcpy(prog, preOrdem[(*indPre)++]);        //salvando a raiz pela semente preOrdem
         int i = l;
-        while (strcmp(prog, inOrdem[i]))
+        while (strcmp(prog, inOrdem[i]))        //procurando indice da raiz no inOrdem
             i++;
         Pasta *novo = malloc(sizeof(Pasta));
         strcpy(novo->programa, prog);
-        novo->pai = pai;//Atualizei mas ainda não testei, se der merda coloque essa linha dentro de if(pai)
+        novo->pai = pai;
         if (pai) {
             strcpy(novo->nome, pai->programa);
             if (filho == Esq)
@@ -327,21 +372,17 @@ void testeVelocidade(int t_gasto, int t_max, char *prog) {
 Pasta* balanceamento(Pasta *raiz) {
     int indice=0;
     char **aux = alocaMatriz(NUM_PROG, 30);
-    extraiSemente(raiz, aux, &indice);
-    //imprimeMat(aux, NUM_PROG, 30);
+    extraiSementeIn(raiz, aux, &indice);
     desaloca(raiz);
     raiz = criaArv(aux, 0, NUM_PROG-1, Raiz, NULL);
-    //imprimePreOrdem(raiz);
     printf("[OPTIMIZE] O sistema de acesso a programas foi otimizado\n");
     return raiz;
 }
-void extraiSemente(Pasta *raiz, char **aux, int *indice){
+void extraiSementeIn(Pasta *raiz, char **aux, int *indice){
     if(raiz){
-        //strcpy(aux[(*indice)++], raiz->programa);
-        extraiSemente(raiz->esq, aux, indice);
+        extraiSementeIn(raiz->esq, aux, indice);
         strcpy(aux[(*indice)++], raiz->programa);
-        extraiSemente(raiz->dir, aux, indice);
-        //strcpy(aux[(*indice)++], raiz->programa);
+        extraiSementeIn(raiz->dir, aux, indice);
     }
 }
 Pasta *criaArv(char **semente, int l, int r, Filho filho, Pasta *pai){
@@ -400,7 +441,7 @@ void extraiSementePre(Pasta *raiz, char **aux, int *ind){
 
 void criaCopia(Pasta *raiz, char **in, char **pre) {
     int indice1 = 0, indice2 = 0;
-    extraiSemente(raiz, in, &indice1);
+    extraiSementeIn(raiz, in, &indice1);
     extraiSementePre(raiz, pre, &indice2);
     printf("[BACKUP] Configuracao atual do sistema salva com sucesso\n");
 }
