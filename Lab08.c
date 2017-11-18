@@ -1,3 +1,12 @@
+/*
+  Lab08: Conquistando Ilhas
+  Nome: Fabio Stori
+  RA: 196631
+  Nome: Adivair Santana Ramos
+  RA: 193325
+  Turma E - MC202
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
