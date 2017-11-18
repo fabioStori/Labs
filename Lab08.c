@@ -1,12 +1,3 @@
-/*
-  Lab08: Conquistando Ilhas
-  Nome: Fabio Stori
-  RA: 196631
-  Nome: Adivair Santana Ramos
-  RA: 193325
-  Turma E - MC202
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,7 +21,7 @@ typedef struct Grafo{
     No **adj;
 }Grafo;
 
-void iniciaGrafo(Grafo *g, int n, IlhasGreen IlhasGreen[]);
+void iniciaGrafo(Grafo *g, int n, IlhasGreen *ilhasGreen);
 
 int main() {
     int i, distancia, limBlue, limRed, L; //L é o numero de ilhas que o Green tem inicialmente
@@ -90,3 +81,38 @@ void insereAresta(Grafo g, int i, int j) {
     g.adj[i] = insereNaLista(g.adj[i], j);
     g.adj[j] = insereNaLista(g.adj[j], i);
 }*/
+/*
+int *dijkstra(Grafo g, int s) {
+    int v, *pai = malloc(g.n * sizeof(int));
+    No *t; FilaP h;
+    inicializa(&h, g.n); // inicializa heap 
+    for (v = 0; v < g.n; v++) {
+        pai[v] = -1; // inicializa vertices pai 
+        insere(&h, v, INT_MAX); // vértices no heap 
+    }
+    pai[s] = s; // pai do raiz é a raiz
+    diminuiprioridade (&h, s, 0); // prioridade da raiz 
+    while (!vazia(&h)) {
+        v = extrai_minimo(&h);
+        // vértice já acessado - 'distância não infinita' 
+        if (prioridade(&h, v) != INT_MAX){
+            // acessa os adjacentes
+            for (t = g.adj[v]; t != NULL; t = t->prox){
+                // se o caminho é minimizado via t (adjancente)
+                if (prioridade(&h, v)+t->peso < prioridade(&h, t->v)){
+                    // atualiza prioridade do vértice t 
+                    diminuiprioridade(&h,t->v,prioridade(&h,v)+t->peso);
+                    pai[t->v] = v; // atualiza pai do vértice t                    
+                }
+            }
+        }
+    }
+    return pai;
+}*/
+
+
+
+
+
+
+
