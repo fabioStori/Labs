@@ -23,13 +23,17 @@ typedef struct Grafo{
 
 void iniciaGrafo(Grafo *g, int n, IlhasGreen *ilhasGreen);
 
+No * insereNaLista(No *lista , int vert, char nome[30], int distancia);
+
+void insereAresta(Grafo g, int i, int j, int distancia);
+
 int main() {
     int i, distancia, limBlue, limRed, L; //L é o numero de ilhas que o Green tem inicialmente
     char imperio[30], ilha[30];
 
     scanf("%d %d %d", &limRed, &limBlue, &L);
     IlhasGreen *ilhasGreen;
-    
+
     for (i = 0; i < L; i++) {
         //ilhasGreen[i] = malloc(sizeof(IlhasGreen));
         scanf("%s %d", ilhasGreen[i].nome, &ilhasGreen[i].custo);
@@ -40,10 +44,13 @@ int main() {
 
     while (scanf("%s %s %d", imperio, ilha, &distancia) != EOF) {
         if(!(strcmp(imperio, "Red"))){
+            insereAresta(g, 0, achaIndice(g, ilha), distancia);
             //insere aresta da ilha green ligada ao red
         }else if(!(strcmp(imperio, "Blue"))){
+            insereAresta(g, 1, achaIndice(g, ilha), distancia);
             //insere aresta da ilha green ligada ao blue
         }else{
+            insereAresta(g, achaIndice(g, imperio), achaIndice(g, ilha), distancia);
             //insere aresta da ilha green liga a outra green
         }
     }
@@ -69,40 +76,46 @@ void iniciaGrafo(Grafo *g, int n, IlhasGreen *ilhasGreen) {
         }*/
     }
 }
-/*
-No * insereNaLista(No *lista , int vert) {
+
+No * insereNaLista(No *lista , int vert, char nome[30], int distancia) {
     No *novo = malloc(sizeof(No));
-    novo ->v = vert;
+    strcpy(novo->nome, nome);
+    novo->distancia = distancia;
     novo ->prox = lista;
     return novo;
 }
 
-void insereAresta(Grafo g, int i, int j) {
-    g.adj[i] = insereNaLista(g.adj[i], j);
-    g.adj[j] = insereNaLista(g.adj[j], i);
-}*/
+void insereAresta(Grafo g, int i, int j, int distancia) {
+    g.adj[i] = insereNaLista(g.adj[i], j, g.adj[j]->nome, distancia);
+    g.adj[j] = insereNaLista(g.adj[j], i, g.adj[i]->nome, distancia);
+}
+
+int achaIndice(Grafo g, char nome[30]){
+    //deveria achar o indice certo pra ser inserido uma aresta (?)
+
+}
 /*
 int *dijkstra(Grafo g, int s) {
     int v, *pai = malloc(g.n * sizeof(int));
     No *t; FilaP h;
-    inicializa(&h, g.n); // inicializa heap 
+    inicializa(&h, g.n); // inicializa heap
     for (v = 0; v < g.n; v++) {
-        pai[v] = -1; // inicializa vertices pai 
-        insere(&h, v, INT_MAX); // vértices no heap 
+        pai[v] = -1; // inicializa vertices pai
+        insere(&h, v, INT_MAX); // vértices no heap
     }
     pai[s] = s; // pai do raiz é a raiz
-    diminuiprioridade (&h, s, 0); // prioridade da raiz 
+    diminuiprioridade (&h, s, 0); // prioridade da raiz
     while (!vazia(&h)) {
         v = extrai_minimo(&h);
-        // vértice já acessado - 'distância não infinita' 
+        // vértice já acessado - 'distância não infinita'
         if (prioridade(&h, v) != INT_MAX){
             // acessa os adjacentes
             for (t = g.adj[v]; t != NULL; t = t->prox){
                 // se o caminho é minimizado via t (adjancente)
                 if (prioridade(&h, v)+t->peso < prioridade(&h, t->v)){
-                    // atualiza prioridade do vértice t 
+                    // atualiza prioridade do vértice t
                     diminuiprioridade(&h,t->v,prioridade(&h,v)+t->peso);
-                    pai[t->v] = v; // atualiza pai do vértice t                    
+                    pai[t->v] = v; // atualiza pai do vértice t
                 }
             }
         }
