@@ -81,13 +81,13 @@ void iniciaGrafo(Grafo *g, int n, IlhasGreen *ilhasGreen) {
         g->adj[i]->prox = NULL;
         g->adj[i]->distancia = -1;
         if(i==0){
-            strcpy(g->adj[i]->nome, "Red");  strcpy(g->adj[i]->nome, "Red");
+            strcpy(g->adj[i]->nome, "Red");
             printf("red %s\n", g->adj[i]->nome);
         }else if(i==1){
-            strcpy(g->adj[i]->nome, "Blue"); strcpy(g->adj[i]->nome, "Blue");
+            strcpy(g->adj[i]->nome, "Blue");
             printf("blue %s\n", g->adj[i]->nome);
         }else{
-            strcpy(g->adj[i]->nome, ilhasGreen[i-2].nome); strcpy(g->adj[i]->nome, ilhasGreen[i-2].nome);
+            strcpy(g->adj[i]->nome, ilhasGreen[i-2].nome);
             printf("green %s\n", g->adj[i]->nome);
         }
     }
