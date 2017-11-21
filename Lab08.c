@@ -163,10 +163,3 @@ int *dijkstra(Grafo g, int s) {
     }
     return pai;
 }*/
-
-
-
-
-
-
-
