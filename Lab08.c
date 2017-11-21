@@ -27,9 +27,15 @@ No * insereNaLista(No *lista , int vert, char nome[30], int distancia);
 
 void insereAresta(Grafo g, int i, int j, int distancia);
 
+int achaIndice(Grafo g, char nome[30], int L);
+
+void imprimir(Grafo g, int L);
+
+int *dijkstra(Grafo g, int s);
+
 int main() {
     int i, distancia, limBlue, limRed, L; //L é o numero de ilhas que o Green tem inicialmente
-    char imperio[30], ilha[30];
+    char ilha1[30], ilha2[30];
 
     scanf("%d %d %d", &limRed, &limBlue, &L);
     IlhasGreen *ilhasGreen;
@@ -40,20 +46,22 @@ int main() {
     }
     Grafo g;
     int quantIlhas = L+2;
+    printf("segmentation fault\n");
     iniciaGrafo(&g, quantIlhas, ilhasGreen);
 
-    while (scanf("%s %s %d", imperio, ilha, &distancia) != EOF) {
-        if(!(strcmp(imperio, "Red"))){
-            insereAresta(g, 0, achaIndice(g, ilha), distancia);
+    while (scanf("%s %s %d", ilha1, ilha2, &distancia) != EOF) {
+        if(!(strcmp(ilha1, "Red"))){
+            insereAresta(g, 0, achaIndice(g, ilha2, quantIlhas), distancia);
             //insere aresta da ilha green ligada ao red
-        }else if(!(strcmp(imperio, "Blue"))){
-            insereAresta(g, 1, achaIndice(g, ilha), distancia);
+        }else if(!(strcmp(ilha1, "Blue"))){
+            insereAresta(g, 1, achaIndice(g, ilha2, quantIlhas), distancia);
             //insere aresta da ilha green ligada ao blue
         }else{
-            insereAresta(g, achaIndice(g, imperio), achaIndice(g, ilha), distancia);
+            insereAresta(g, achaIndice(g, ilha1, quantIlhas), achaIndice(g, ilha2, quantIlhas), distancia);
             //insere aresta da ilha green liga a outra green
         }
     }
+    imprimir(g, quantIlhas);
     //quando termina de inserir as arestas no grafo (lista de adjacencias)
     //começa os testes
 
@@ -65,7 +73,7 @@ void iniciaGrafo(Grafo *g, int n, IlhasGreen *ilhasGreen) {
     g->quantIlhas = n;
     g->adj = malloc(n * sizeof(No *));
     for (i = 0; i < n; i++){
-        g->adj[i]->prox = NULL;/*
+        g->adj[i]->prox = NULL;
         g->adj[i]->distancia = -1;
         if(i==0)
             strcpy(g->adj[i]->nome, "Red");
@@ -73,7 +81,7 @@ void iniciaGrafo(Grafo *g, int n, IlhasGreen *ilhasGreen) {
             strcpy(g->adj[i]->nome, "Blue");
         else{
             strcpy(g->adj[i]->nome, ilhasGreen[i].nome);
-        }*/
+        }
     }
 }
 
@@ -90,9 +98,27 @@ void insereAresta(Grafo g, int i, int j, int distancia) {
     g.adj[j] = insereNaLista(g.adj[j], i, g.adj[i]->nome, distancia);
 }
 
-int achaIndice(Grafo g, char nome[30]){
-    //deveria achar o indice certo pra ser inserido uma aresta (?)
+int achaIndice(Grafo g, char nome[30], int L){
+    int i;
+    for(i=0;i<L;i++){
+        if(strcmp(g.adj[i]->nome, nome)==0)
+            return i;
+    }
+}
 
+void imprimir(Grafo g, int L){
+    int i;
+    for(i=0;i<L;i++){
+        if(g.adj[i]->prox!=NULL){
+            No* tmp = g.adj[i]->prox;
+            while(tmp!=NULL){
+                printf("indice [%d] nome [%s]", i, tmp->nome);
+                tmp=tmp->prox;
+            }
+        }else{
+            printf("indice [%d] nome [%s]", i, g.adj[i]->nome);
+        }
+    }
 }
 /*
 int *dijkstra(Grafo g, int s) {
